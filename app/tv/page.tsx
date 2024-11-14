@@ -1,12 +1,8 @@
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
 import { MovieGrid } from '@/components/movie-grid';
 import { fetchTMDBApi } from '@/lib/tmdb';
 import type { TVShow } from '@/types/tmdb';
-
-const PaginationControl = dynamic(() => import('@/components/pagination').then(mod => mod.PaginationControl), {
-  ssr: false
-});
+import { PaginationControl } from '@/components/pagination';
 
 interface TVShowsPageProps {
   searchParams: { page?: string };
@@ -18,6 +14,8 @@ interface TVShowResponse {
   total_pages: number;
   total_results: number;
 }
+
+export const revalidate = 0;
 
 export default function TVShowsPage({ searchParams }: TVShowsPageProps) {
   return (
@@ -44,15 +42,17 @@ async function TVShowList({ searchParams }: { searchParams: { page?: string } })
   }));
 
   return (
-    <Suspense>
-      <div>
-        <MovieGrid items={showsWithType} />
-        <PaginationControl
-          currentPage={currentPage}
-          totalPages={Math.min(shows.total_pages, 500)}
-          baseUrl="/tv"
-        />
+    <div>
+      <MovieGrid items={showsWithType} />
+      <div className="mt-6">
+        <Suspense fallback={<div>Loading pagination...</div>}>
+          <PaginationControl
+            currentPage={currentPage}
+            totalPages={Math.min(shows.total_pages, 500)}
+            baseUrl="/tv"
+          />
+        </Suspense>
       </div>
-    </Suspense>
+    </div>
   );
 } 

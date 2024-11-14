@@ -1,12 +1,8 @@
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
 import { MovieGrid } from '@/components/movie-grid';
 import { fetchTMDBApi } from '@/lib/tmdb';
 import type { Movie, TrendingResponse } from '@/types/tmdb';
-
-const PaginationControl = dynamic(() => import('@/components/pagination').then(mod => mod.PaginationControl), {
-  ssr: false
-});
+import { PaginationControl } from '@/components/pagination';
 
 interface MoviesPageProps {
   searchParams: { page?: string };
@@ -15,6 +11,8 @@ interface MoviesPageProps {
 interface MovieResponse extends Omit<TrendingResponse, 'results'> {
   results: Movie[];
 }
+
+export const revalidate = 0;
 
 export default function MoviesPage({ searchParams }: MoviesPageProps) {
   return (
@@ -27,7 +25,6 @@ export default function MoviesPage({ searchParams }: MoviesPageProps) {
   );
 }
 
-// Separate component for data fetching
 async function MovieList({ searchParams }: { searchParams: { page?: string } }) {
   const currentPage = Number(searchParams.page) || 1;
   
@@ -42,15 +39,17 @@ async function MovieList({ searchParams }: { searchParams: { page?: string } }) 
   }));
 
   return (
-    <Suspense>
-      <div>
-        <MovieGrid items={moviesWithType} />
-        <PaginationControl
-          currentPage={currentPage}
-          totalPages={Math.min(movies.total_pages, 500)}
-          baseUrl="/movies"
-        />
+    <div>
+      <MovieGrid items={moviesWithType} />
+      <div className="mt-6">
+        <Suspense fallback={<div>Loading pagination...</div>}>
+          <PaginationControl
+            currentPage={currentPage}
+            totalPages={Math.min(movies.total_pages, 500)}
+            baseUrl="/movies"
+          />
+        </Suspense>
       </div>
-    </Suspense>
+    </div>
   );
 } 

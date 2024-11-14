@@ -1,16 +1,14 @@
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
 import { MovieGrid } from '@/components/movie-grid';
 import { fetchTMDBApi } from '@/lib/tmdb';
 import type { TrendingResponse } from '@/types/tmdb';
-
-const PaginationControl = dynamic(() => import('@/components/pagination').then(mod => mod.PaginationControl), {
-  ssr: false
-});
+import { PaginationControl } from '@/components/pagination';
 
 interface TrendingPageProps {
   searchParams: { page?: string };
 }
+
+export const revalidate = 0;
 
 export default function TrendingPage({ searchParams }: TrendingPageProps) {
   return (
@@ -39,15 +37,17 @@ async function TrendingList({ searchParams }: { searchParams: { page?: string } 
   });
 
   return (
-    <Suspense>
-      <div>
-        <MovieGrid items={trendingWithType} />
-        <PaginationControl
-          currentPage={currentPage}
-          totalPages={Math.min(trending.total_pages, 500)}
-          baseUrl="/trending"
-        />
+    <div>
+      <MovieGrid items={trendingWithType} />
+      <div className="mt-6">
+        <Suspense fallback={<div>Loading pagination...</div>}>
+          <PaginationControl
+            currentPage={currentPage}
+            totalPages={Math.min(trending.total_pages, 500)}
+            baseUrl="/trending"
+          />
+        </Suspense>
       </div>
-    </Suspense>
+    </div>
   );
 } 

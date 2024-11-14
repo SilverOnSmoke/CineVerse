@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Navbar } from '@/components/navbar';
 import { Toaster } from '@/components/ui/toaster';
+import { Suspense } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,7 +29,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="relative min-h-screen flex flex-col">
-            <Navbar />
+            <Suspense fallback={<div className="h-14 border-b" />}>
+              <Navbar />
+            </Suspense>
             <main className="flex-1 container mx-auto px-4 py-4">
               {children}
             </main>

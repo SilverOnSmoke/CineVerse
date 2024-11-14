@@ -6,8 +6,9 @@ import { Film, Search, TrendingUp, Tv, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MobileMenu } from '@/components/mobile-menu';
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, Suspense } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/movies', label: 'Movies', icon: Film },
@@ -15,7 +16,8 @@ const navItems = [
   { href: '/trending', label: 'Trending', icon: TrendingUp },
 ];
 
-export function Navbar() {
+// Separate the search functionality into its own component
+function SearchBar() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -42,81 +44,109 @@ export function Navbar() {
     }
   };
 
+  const handleSearchToggle = () => {
+    setIsSearchOpen(!isSearchOpen);
+    if (!isSearchOpen) {
+      // Small delay to ensure the input is rendered before focusing
+      setTimeout(() => {
+        const searchInput = document.getElementById('search-input');
+        searchInput?.focus();
+      }, 100);
+    } else {
+      handleSearchClear();
+    }
+  };
+
+  return (
+    <div className="relative flex items-center">
+      <div
+        className={cn(
+          'absolute right-0 top-1/2 -translate-y-1/2 flex items-center transition-all duration-300',
+          isSearchOpen ? 'w-[350px] opacity-100 pr-4' : 'w-0 opacity-0'
+        )}
+      >
+        <Input
+          id="search-input"
+          type="text"
+          placeholder="Search movies & TV shows..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className={cn(
+            'w-full pr-8 transition-all duration-300 rounded-full',
+            !isSearchOpen && 'pointer-events-none'
+          )}
+        />
+        {search && isSearchOpen && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-6 h-8 w-8 hover:bg-transparent"
+            onClick={handleSearchClear}
+          >
+            <X className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+          </Button>
+        )}
+      </div>
+      {!isSearchOpen && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleSearchToggle}
+          className="relative z-10"
+        >
+          <Search className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
+  );
+}
+
+export function Navbar() {
+  const pathname = usePathname();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="container mx-auto px-4">
-        <div className="flex h-14 items-center">
-          {/* Left Section */}
-          <div className="flex items-center gap-2">
+      <div className="container flex h-14 items-center justify-between">
+        {/* Left section - Logo and mobile menu */}
+        <div className="flex items-center">
+          <div className="md:hidden">
             <MobileMenu />
-            <Link href="/" className="font-semibold">
-              CINEVERSE
-            </Link>
           </div>
-
-          {/* Center Navigation */}
-          <div className="flex-1 flex justify-center">
-            <div className="hidden md:flex items-center gap-6">
-              {navItems.map(({ href, label, icon: Icon }) => (
-                <Button
-                  key={href}
-                  variant={pathname === href ? 'secondary' : 'ghost'}
-                  className="flex items-center gap-2"
-                  asChild
-                >
-                  <Link href={href}>
-                    <Icon className="h-4 w-4" />
-                    {label}
-                  </Link>
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Right Section - Search */}
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-            >
-              {isSearchOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Search className="h-5 w-5" />
-              )}
-            </Button>
-          </div>
+          <Link 
+            href="/" 
+            className="flex items-center space-x-2 pl-6 md:pl-8"
+          >
+            <span className="font-semibold text-lg">CINEVERSE</span>
+          </Link>
         </div>
 
-        {/* Search Overlay */}
-        {isSearchOpen && (
-          <div className="absolute left-0 right-0 top-[56px] border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container mx-auto px-4">
-              <div className="relative py-4">
-                <Input
-                  type="text"
-                  placeholder="Search movies & TV shows..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pr-8"
-                  autoFocus
-                />
-                {search && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent"
-                    onClick={handleSearchClear}
-                  >
-                    <X className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </nav>
+        {/* Center section - Navigation */}
+        <nav className="hidden md:flex items-center justify-center space-x-8">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center text-sm font-medium transition-colors group relative px-3 py-2",
+                pathname === item.href 
+                  ? "text-primary" 
+                  : "text-muted-foreground hover:text-primary"
+              )}
+            >
+              <item.icon className="mr-2 h-4 w-4" />
+              {item.label}
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-200 ease-out" />
+            </Link>
+          ))}
+        </nav>
+
+        {/* Right section - Search */}
+        <div className="flex items-center space-x-4 pr-4">
+          <Suspense fallback={<div className="w-8 h-8" />}>
+            <SearchBar />
+          </Suspense>
+        </div>
+      </div>
     </header>
   );
 }
