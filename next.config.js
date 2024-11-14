@@ -2,6 +2,7 @@
 const nextConfig = {
   images: {
     domains: ['image.tmdb.org'],
+    unoptimized: true
   },
   env: {
     NEXT_PUBLIC_TMDB_API_URL: process.env.NEXT_PUBLIC_TMDB_API_URL,
@@ -12,7 +13,8 @@ const nextConfig = {
     optimizeCss: true,
     scrollRestoration: true,
   },
-  output: 'standalone',
+  output: 'export',
+  distDir: '.next',
   webpack: (config, { isServer }) => {
     config.optimization.splitChunks = {
       chunks: 'all',
@@ -36,10 +38,6 @@ const nextConfig = {
       }
     };
     return config;
-  },
-  target: 'serverless',
-  generateBuildId: async () => {
-    return 'build-' + Date.now();
   }
 };
 

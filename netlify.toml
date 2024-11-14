@@ -1,10 +1,15 @@
 [build]
   command = "npm run build"
   publish = ".next"
+  environment = { NETLIFY_NEXT_PLUGIN_SKIP = "true" }
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[functions]
+  node_bundler = "esbuild"
+
 [build.environment]
   NEXT_USE_NETLIFY_EDGE = "true"
-  NEXT_PRIVATE_TARGET = "server" 
+  NEXT_PRIVATE_TARGET = "server"
+  NODE_VERSION = "18"
