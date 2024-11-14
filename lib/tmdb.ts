@@ -1,0 +1,70 @@
+const TMDB_API_URL = process.env.NEXT_PUBLIC_TMDB_API_URL || 'https://api.themoviedb.org/3';
+const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+const TMDB_IMAGE_URL = process.env.NEXT_PUBLIC_TMDB_IMAGE_URL || 'https://image.tmdb.org/t/p';
+
+export const getTMDBImageUrl = (path: string, size: string = 'original') => {
+  if (!path) return '';
+  return `${TMDB_IMAGE_URL}/${size}${path}`;
+};
+
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+export async function fetchTMDBApi<T>(
+  endpoint: string,
+  params: Record<string, string> = {},
+  retries = 3
+): Promise<T> {
+  if (!TMDB_API_KEY) {
+    console.error('TMDB API key is missing');
+    throw new Error('TMDB API key is not configured');
+  }
+
+  const url = new URL(`${TMDB_API_URL}${endpoint}`);
+  url.searchParams.append('api_key', TMDB_API_KEY);
+  
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.append(key, value);
+  }
+
+  let lastError: Error | null = null;
+  
+  for (let i = 0; i < retries; i++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      console.log(`Attempting to fetch: ${url.toString()}`);
+
+      const response = await fetch(url.toString(), {
+        next: { 
+          revalidate: 3600
+        },
+        keepalive: true,
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`API Error: Status ${response.status}`, errorText);
+        throw new Error(`Failed to fetch data from TMDB: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(`Attempt ${i + 1} failed:`, error);
+      lastError = error as Error;
+      
+      if (i < retries - 1) {
+        const waitTime = Math.pow(2, i) * 1000;
+        console.log(`Waiting ${waitTime}ms before retry...`);
+        await wait(waitTime);
+        continue;
+      }
+    }
+  }
+
+  throw lastError || new Error('Failed to fetch data from TMDB');
+}
