@@ -9,9 +9,18 @@ import { Suspense } from 'react';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Cineverse - Watch Movies Online',
+  title: 'CineVerse - Watch Movies Online',
   description: 'Stream your favorite movies and TV shows',
   keywords: ['movies', 'streaming', 'tv shows', 'entertainment'],
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.png', type: 'image/png' }
+    ],
+    apple: [
+      { url: '/favicon.png', sizes: '180x180', type: 'image/png' }
+    ]
+  },
 };
 
 export default function RootLayout({
