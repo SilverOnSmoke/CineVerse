@@ -9,6 +9,19 @@ interface TrendingPageProps {
 }
 
 export default async function TrendingPage({ searchParams }: TrendingPageProps) {
+  return (
+    <Suspense>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Trending</h1>
+        <Suspense fallback={<div>Loading...</div>}>
+          <TrendingList searchParams={searchParams} />
+        </Suspense>
+      </div>
+    </Suspense>
+  );
+}
+
+async function TrendingList({ searchParams }: { searchParams: { page?: string } }) {
   const currentPage = Number(searchParams.page) || 1;
   
   const trending = await fetchTMDBApi<TrendingResponse>('/trending/all/week', {
@@ -17,31 +30,20 @@ export default async function TrendingPage({ searchParams }: TrendingPageProps) 
 
   const trendingWithType = trending.results.map(item => {
     if (item.media_type === 'movie') {
-      return {
-        ...item,
-        media_type: 'movie' as const
-      };
+      return { ...item, media_type: 'movie' as const };
     } else {
-      return {
-        ...item,
-        media_type: 'tv' as const
-      };
+      return { ...item, media_type: 'tv' as const };
     }
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Trending</h1>
-      <Suspense fallback={<div>Loading...</div>}>
-        <div>
-          <MovieGrid items={trendingWithType} />
-          <PaginationControl
-            currentPage={currentPage}
-            totalPages={Math.min(trending.total_pages, 500)}
-            baseUrl="/trending"
-          />
-        </div>
-      </Suspense>
+    <div>
+      <MovieGrid items={trendingWithType} />
+      <PaginationControl
+        currentPage={currentPage}
+        totalPages={Math.min(trending.total_pages, 500)}
+        baseUrl="/trending"
+      />
     </div>
   );
 } 

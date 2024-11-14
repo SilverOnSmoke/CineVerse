@@ -13,6 +13,20 @@ interface MovieResponse extends Omit<TrendingResponse, 'results'> {
 }
 
 export default async function MoviesPage({ searchParams }: MoviesPageProps) {
+  return (
+    <Suspense>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Movies</h1>
+        <Suspense fallback={<div>Loading...</div>}>
+          <MovieList searchParams={searchParams} />
+        </Suspense>
+      </div>
+    </Suspense>
+  );
+}
+
+// New component to handle the data fetching
+async function MovieList({ searchParams }: { searchParams: { page?: string } }) {
   const currentPage = Number(searchParams.page) || 1;
   
   const movies = await fetchTMDBApi<MovieResponse>('/discover/movie', {
@@ -26,18 +40,13 @@ export default async function MoviesPage({ searchParams }: MoviesPageProps) {
   }));
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Movies</h1>
-      <Suspense fallback={<div>Loading...</div>}>
-        <div>
-          <MovieGrid items={moviesWithType} />
-          <PaginationControl
-            currentPage={currentPage}
-            totalPages={Math.min(movies.total_pages, 500)}
-            baseUrl="/movies"
-          />
-        </div>
-      </Suspense>
+    <div>
+      <MovieGrid items={moviesWithType} />
+      <PaginationControl
+        currentPage={currentPage}
+        totalPages={Math.min(movies.total_pages, 500)}
+        baseUrl="/movies"
+      />
     </div>
   );
 } 

@@ -16,6 +16,19 @@ interface TVShowResponse {
 }
 
 export default async function TVShowsPage({ searchParams }: TVShowsPageProps) {
+  return (
+    <Suspense>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">TV Shows</h1>
+        <Suspense fallback={<div>Loading...</div>}>
+          <TVShowList searchParams={searchParams} />
+        </Suspense>
+      </div>
+    </Suspense>
+  );
+}
+
+async function TVShowList({ searchParams }: { searchParams: { page?: string } }) {
   const currentPage = Number(searchParams.page) || 1;
   
   const shows = await fetchTMDBApi<TVShowResponse>('/discover/tv', {
@@ -29,20 +42,13 @@ export default async function TVShowsPage({ searchParams }: TVShowsPageProps) {
   }));
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">TV Shows</h1>
-      <Suspense fallback={<div>Loading...</div>}>
-        <div>
-          <MovieGrid items={showsWithType} />
-          <Suspense>
-            <PaginationControl
-              currentPage={currentPage}
-              totalPages={Math.min(shows.total_pages, 500)}
-              baseUrl="/tv"
-            />
-          </Suspense>
-        </div>
-      </Suspense>
+    <div>
+      <MovieGrid items={showsWithType} />
+      <PaginationControl
+        currentPage={currentPage}
+        totalPages={Math.min(shows.total_pages, 500)}
+        baseUrl="/tv"
+      />
     </div>
   );
 } 

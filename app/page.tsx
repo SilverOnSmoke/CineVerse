@@ -43,23 +43,25 @@ async function MovieSection({ type, title }: { type: string; title: string }) {
 
 export default async function Home() {
   return (
-    <div className="space-y-8">
-      <Suspense fallback={<LoadingFallback />}>
-        {/* Trending Movies Carousel */}
-        <MovieCarousel
-          movies={await fetchTMDBApi<MovieResponse>('/trending/movie/day')
-            .then(data => data.results.map(movie => ({ ...movie, media_type: 'movie' as const })))
-            .catch(() => [])}
-        />
-      </Suspense>
+    <Suspense>
+      <div className="space-y-8">
+        <Suspense fallback={<LoadingFallback />}>
+          {/* Trending Movies Carousel */}
+          <MovieCarousel
+            movies={await fetchTMDBApi<MovieResponse>('/trending/movie/day')
+              .then(data => data.results.map(movie => ({ ...movie, media_type: 'movie' as const })))
+              .catch(() => [])}
+          />
+        </Suspense>
 
-      <Suspense fallback={<LoadingFallback />}>
-        <MovieSection type="/movie/popular" title="Popular Movies" />
-      </Suspense>
+        <Suspense fallback={<LoadingFallback />}>
+          <MovieSection type="/movie/popular" title="Popular Movies" />
+        </Suspense>
 
-      <Suspense fallback={<LoadingFallback />}>
-        <MovieSection type="/movie/top_rated" title="Top Rated" />
-      </Suspense>
-    </div>
+        <Suspense fallback={<LoadingFallback />}>
+          <MovieSection type="/movie/top_rated" title="Top Rated" />
+        </Suspense>
+      </div>
+    </Suspense>
   );
 }
