@@ -19,16 +19,14 @@ interface TVShowResponse {
   total_results: number;
 }
 
-export default async function TVShowsPage({ searchParams }: TVShowsPageProps) {
+export default function TVShowsPage({ searchParams }: TVShowsPageProps) {
   return (
-    <Suspense>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">TV Shows</h1>
-        <Suspense fallback={<div>Loading...</div>}>
-          <TVShowList searchParams={searchParams} />
-        </Suspense>
-      </div>
-    </Suspense>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">TV Shows</h1>
+      <Suspense fallback={<div>Loading...</div>}>
+        <TVShowList searchParams={searchParams} />
+      </Suspense>
+    </div>
   );
 }
 
@@ -46,13 +44,15 @@ async function TVShowList({ searchParams }: { searchParams: { page?: string } })
   }));
 
   return (
-    <div>
-      <MovieGrid items={showsWithType} />
-      <PaginationControl
-        currentPage={currentPage}
-        totalPages={Math.min(shows.total_pages, 500)}
-        baseUrl="/tv"
-      />
-    </div>
+    <Suspense>
+      <div>
+        <MovieGrid items={showsWithType} />
+        <PaginationControl
+          currentPage={currentPage}
+          totalPages={Math.min(shows.total_pages, 500)}
+          baseUrl="/tv"
+        />
+      </div>
+    </Suspense>
   );
 } 

@@ -12,16 +12,14 @@ interface TrendingPageProps {
   searchParams: { page?: string };
 }
 
-export default async function TrendingPage({ searchParams }: TrendingPageProps) {
+export default function TrendingPage({ searchParams }: TrendingPageProps) {
   return (
-    <Suspense>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Trending</h1>
-        <Suspense fallback={<div>Loading...</div>}>
-          <TrendingList searchParams={searchParams} />
-        </Suspense>
-      </div>
-    </Suspense>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Trending</h1>
+      <Suspense fallback={<div>Loading...</div>}>
+        <TrendingList searchParams={searchParams} />
+      </Suspense>
+    </div>
   );
 }
 
@@ -41,13 +39,15 @@ async function TrendingList({ searchParams }: { searchParams: { page?: string } 
   });
 
   return (
-    <div>
-      <MovieGrid items={trendingWithType} />
-      <PaginationControl
-        currentPage={currentPage}
-        totalPages={Math.min(trending.total_pages, 500)}
-        baseUrl="/trending"
-      />
-    </div>
+    <Suspense>
+      <div>
+        <MovieGrid items={trendingWithType} />
+        <PaginationControl
+          currentPage={currentPage}
+          totalPages={Math.min(trending.total_pages, 500)}
+          baseUrl="/trending"
+        />
+      </div>
+    </Suspense>
   );
 } 

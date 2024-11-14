@@ -16,20 +16,18 @@ interface MovieResponse extends Omit<TrendingResponse, 'results'> {
   results: Movie[];
 }
 
-export default async function MoviesPage({ searchParams }: MoviesPageProps) {
+export default function MoviesPage({ searchParams }: MoviesPageProps) {
   return (
-    <Suspense>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Movies</h1>
-        <Suspense fallback={<div>Loading...</div>}>
-          <MovieList searchParams={searchParams} />
-        </Suspense>
-      </div>
-    </Suspense>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Movies</h1>
+      <Suspense fallback={<div>Loading...</div>}>
+        <MovieList searchParams={searchParams} />
+      </Suspense>
+    </div>
   );
 }
 
-// New component to handle the data fetching
+// Separate component for data fetching
 async function MovieList({ searchParams }: { searchParams: { page?: string } }) {
   const currentPage = Number(searchParams.page) || 1;
   
@@ -44,13 +42,15 @@ async function MovieList({ searchParams }: { searchParams: { page?: string } }) 
   }));
 
   return (
-    <div>
-      <MovieGrid items={moviesWithType} />
-      <PaginationControl
-        currentPage={currentPage}
-        totalPages={Math.min(movies.total_pages, 500)}
-        baseUrl="/movies"
-      />
-    </div>
+    <Suspense>
+      <div>
+        <MovieGrid items={moviesWithType} />
+        <PaginationControl
+          currentPage={currentPage}
+          totalPages={Math.min(movies.total_pages, 500)}
+          baseUrl="/movies"
+        />
+      </div>
+    </Suspense>
   );
 } 
