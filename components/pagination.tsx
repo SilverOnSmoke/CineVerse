@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Pagination,
   PaginationContent,
@@ -18,6 +19,7 @@ interface PaginationControlProps {
 }
 
 export function PaginationControl({ currentPage, totalPages, baseUrl }: PaginationControlProps) {
+  const searchParams = useSearchParams();
   const pages = getPaginationItems(currentPage, totalPages);
 
   return (

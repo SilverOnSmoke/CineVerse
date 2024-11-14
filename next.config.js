@@ -37,6 +37,10 @@ const nextConfig = {
     };
     return config;
   },
+  target: 'serverless',
+  generateBuildId: async () => {
+    return 'build-' + Date.now();
+  }
 };
 
 module.exports = nextConfig;

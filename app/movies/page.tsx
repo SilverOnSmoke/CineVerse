@@ -1,8 +1,12 @@
 import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { MovieGrid } from '@/components/movie-grid';
 import { fetchTMDBApi } from '@/lib/tmdb';
 import type { Movie, TrendingResponse } from '@/types/tmdb';
-import { PaginationControl } from '@/components/pagination';
+
+const PaginationControl = dynamic(() => import('@/components/pagination').then(mod => mod.PaginationControl), {
+  ssr: false
+});
 
 interface MoviesPageProps {
   searchParams: { page?: string };
