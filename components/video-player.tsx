@@ -19,6 +19,8 @@ interface VideoPlayerProps {
 const PROVIDERS = {
   EMBED_SU: 'embed.su',
   VIDLINK: 'vidlink.pro',
+  VIDBINGE: 'vidbinge.dev',
+  AUTOEMBED: 'autoembed.cc',
 } as const;
 
 export function VideoPlayer({ tmdbId, type, season, episode, show, initialSeason }: VideoPlayerProps) {
@@ -27,20 +29,39 @@ export function VideoPlayer({ tmdbId, type, season, episode, show, initialSeason
   const { toast } = useToast();
 
   const getVideoUrl = () => {
-    if (currentProvider === 'EMBED_SU') {
-      return type === 'movie'
-        ? `https://embed.su/embed/movie/${tmdbId}`
-        : `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`;
-    } else {
-      return type === 'movie'
-        ? `https://vidlink.pro/movie/${tmdbId}`
-        : `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}`;
+    switch (currentProvider) {
+      case 'EMBED_SU':
+        return type === 'movie'
+          ? `https://embed.su/embed/movie/${tmdbId}`
+          : `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`;
+      
+      case 'VIDLINK':
+        return type === 'movie'
+          ? `https://vidlink.pro/movie/${tmdbId}`
+          : `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}`;
+      
+      case 'VIDBINGE':
+        return type === 'movie'
+          ? `https://vidbinge.dev/embed/movie/${tmdbId}`
+          : `https://vidbinge.dev/embed/tv/${tmdbId}/${season}/${episode}`;
+      
+      case 'AUTOEMBED':
+        return type === 'movie'
+          ? `https://player.autoembed.cc/embed/movie/${tmdbId}`
+          : `https://player.autoembed.cc/embed/tv/${tmdbId}/${season}/${episode}`;
+      
+      default:
+        return '';
     }
   };
 
   const handleError = () => {
-    if (currentProvider === 'EMBED_SU') {
-      setCurrentProvider('VIDLINK');
+    const providers: Array<keyof typeof PROVIDERS> = ['EMBED_SU', 'VIDLINK', 'VIDBINGE', 'AUTOEMBED'];
+    const currentIndex = providers.indexOf(currentProvider);
+    const nextProvider = providers[currentIndex + 1];
+
+    if (nextProvider) {
+      setCurrentProvider(nextProvider);
       toast({
         title: "Switching Server",
         description: "Trying alternative server...",
@@ -49,7 +70,7 @@ export function VideoPlayer({ tmdbId, type, season, episode, show, initialSeason
       setHasError(true);
       toast({
         title: "Content Unavailable",
-        description: "We&apos;re sorry, but this content is temporarily unavailable. Please try again later or contact support if the issue persists.",
+        description: "We're sorry, but this content is temporarily unavailable. Please try again later or contact support if the issue persists.",
         variant: "destructive",
       });
     }
@@ -61,7 +82,7 @@ export function VideoPlayer({ tmdbId, type, season, episode, show, initialSeason
         <div className="text-center space-y-4 p-6">
           <h2 className="text-2xl font-bold">Content Unavailable</h2>
           <p className="text-muted-foreground">
-            We&apos;re sorry, but this content is temporarily unavailable.<br />
+            We're sorry, but this content is temporarily unavailable.<br />
             Please try again later or contact support if the issue persists.
           </p>
         </div>

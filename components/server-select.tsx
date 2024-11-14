@@ -1,5 +1,3 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,16 +8,18 @@ import {
 import { Settings } from 'lucide-react';
 
 interface ServerSelectProps {
-  currentServer: 'EMBED_SU' | 'VIDLINK';
-  onServerChange: (server: 'EMBED_SU' | 'VIDLINK') => void;
+  currentServer: keyof typeof PROVIDERS;
+  onServerChange: (server: keyof typeof PROVIDERS) => void;
 }
 
-export function ServerSelect({ currentServer, onServerChange }: ServerSelectProps) {
-  const servers = {
-    EMBED_SU: 'Server 1',
-    VIDLINK: 'Server 2',
-  };
+const PROVIDERS = {
+  EMBED_SU: 'Server 1',
+  VIDLINK: 'Server 2',
+  VIDBINGE: 'Server 3',
+  AUTOEMBED: 'Server 4',
+} as const;
 
+export function ServerSelect({ currentServer, onServerChange }: ServerSelectProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -32,15 +32,15 @@ export function ServerSelect({ currentServer, onServerChange }: ServerSelectProp
             <span>Change Server</span>
           </div>
           <div className="flex items-center gap-2">
-            <span>{servers[currentServer]}</span>
+            <span>{PROVIDERS[currentServer]}</span>
           </div>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]">
-        {(Object.entries(servers) as Array<[keyof typeof servers, string]>).map(([key, label]) => (
+        {(Object.entries(PROVIDERS) as Array<[keyof typeof PROVIDERS, string]>).map(([key, label]) => (
           <DropdownMenuItem
             key={key}
-            onClick={() => onServerChange(key as 'EMBED_SU' | 'VIDLINK')}
+            onClick={() => onServerChange(key)}
             className="flex items-center gap-2"
           >
             <div className={`w-2 h-2 rounded-full ${currentServer === key ? 'bg-green-500' : 'bg-gray-400'}`} />
