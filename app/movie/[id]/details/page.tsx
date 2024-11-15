@@ -10,6 +10,9 @@ import { MovieReviews } from '@/components/movie-reviews';
 import { formatCurrency, formatRuntime } from '@/lib/utils';
 import type { MovieDetails } from '@/types/tmdb';
 import { Card, CardContent } from '@/components/ui/card';
+import { Play, Youtube } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 interface MovieDetailsPageProps {
   params: {
@@ -46,12 +49,29 @@ export const dynamicParams = true;
 export const dynamic = 'force-dynamic';
 export const revalidate = 3600; // Revalidate every hour
 
+// Add this interface for video results
+interface VideoResult {
+  results: Array<{
+    key: string;
+    site: string;
+    type: string;
+  }>;
+}
+
 export default async function MovieDetailsPage({ params }: MovieDetailsPageProps) {
-  const movie = await fetchTMDBApi<MovieDetails>(`/movie/${params.id}`);
+  const [movie, videos] = await Promise.all([
+    fetchTMDBApi<MovieDetails>(`/movie/${params.id}`),
+    fetchTMDBApi<VideoResult>(`/movie/${params.id}/videos`),
+  ]);
 
   if (!movie) {
     notFound();
   }
+
+  // Find the first trailer from YouTube
+  const trailer = videos.results.find(
+    video => video.site === 'YouTube' && video.type === 'Trailer'
+  );
 
   return (
     <div className="space-y-6">
@@ -102,6 +122,29 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                   </p>
                 </div>
                 <span className="text-muted-foreground">User Score</span>
+              </div>
+
+              {/* Add Buttons after rating */}
+              <div className="flex items-center justify-center md:justify-start gap-2">
+                <Button asChild>
+                  <Link href={`/movie/${params.id}`}>
+                    <Play className="h-4 w-4 mr-2" />
+                    Watch Now
+                  </Link>
+                </Button>
+                
+                {trailer && (
+                  <Button variant="outline" asChild>
+                    <Link 
+                      href={`https://www.youtube.com/watch?v=${trailer.key}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Youtube className="h-4 w-4 mr-2" />
+                      Watch Trailer
+                    </Link>
+                  </Button>
+                )}
               </div>
 
               {/* Tagline */}

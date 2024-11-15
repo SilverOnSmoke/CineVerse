@@ -8,6 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { TVCredits } from '@/components/tv-credits';
 import type { TVShowDetails } from '@/types/tmdb';
+import { Button } from '@/components/ui/button';
+import { Play, Youtube } from 'lucide-react';
+import Link from 'next/link';
 
 interface TVShowDetailsPageProps {
   params: { id: string };
@@ -16,6 +19,14 @@ interface TVShowDetailsPageProps {
 interface TVListResponse {
   results: Array<{
     id: number;
+  }>;
+}
+
+interface VideoResult {
+  results: Array<{
+    key: string;
+    site: string;
+    type: string;
   }>;
 }
 
@@ -39,11 +50,18 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 3600; // Revalidate every hour
 
 export default async function TVShowDetailsPage({ params }: TVShowDetailsPageProps) {
-  const show = await fetchTMDBApi<TVShowDetails>(`/tv/${params.id}`).catch(() => null);
+  const [show, videos] = await Promise.all([
+    fetchTMDBApi<TVShowDetails>(`/tv/${params.id}`).catch(() => null),
+    fetchTMDBApi<VideoResult>(`/tv/${params.id}/videos`).catch(() => ({ results: [] })),
+  ]);
 
   if (!show) {
     notFound();
   }
+
+  const trailer = videos.results.find(
+    video => video.site === 'YouTube' && video.type === 'Trailer'
+  );
 
   return (
     <div className="space-y-6">
@@ -94,6 +112,29 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
                   </p>
                 </div>
                 <span className="text-muted-foreground">User Score</span>
+              </div>
+
+              {/* Add Buttons after rating */}
+              <div className="flex items-center justify-center md:justify-start gap-2">
+                <Button asChild>
+                  <Link href={`/tv/${params.id}?season=1&episode=1`}>
+                    <Play className="h-4 w-4 mr-2" />
+                    Watch Now
+                  </Link>
+                </Button>
+                
+                {trailer && (
+                  <Button variant="outline" asChild>
+                    <Link 
+                      href={`https://www.youtube.com/watch?v=${trailer.key}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Youtube className="h-4 w-4 mr-2" />
+                      Watch Trailer
+                    </Link>
+                  </Button>
+                )}
               </div>
 
               {/* Tagline */}
