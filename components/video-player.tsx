@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ServerSelect } from '@/components/server-select';
 import { EpisodeGrid } from '@/components/episode-grid';
 import type { TVShowDetails, TVShowSeason } from '@/types/tmdb';
+import { NativePlayer } from '@/components/native-player';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 interface VideoPlayerProps {
   tmdbId: string;
@@ -17,38 +20,60 @@ interface VideoPlayerProps {
 }
 
 const PROVIDERS = {
-  EMBED_SU: 'embed.su',
-  VIDLINK: 'vidlink.pro',
-  VIDBINGE: 'vidbinge.dev',
-  AUTOEMBED: 'autoembed.cc',
+  NATIVE: 'Native Player',
+  EMBED_SU: 'Server 1',
+  VIDLINK: 'Server 2',
+  VIDBINGE: 'Server 3',
+  AUTOEMBED: 'Server 4',
 } as const;
 
-export function VideoPlayer({ tmdbId, type, season, episode, show, initialSeason }: VideoPlayerProps) {
-  const [currentProvider, setCurrentProvider] = useState<keyof typeof PROVIDERS>('EMBED_SU');
+// Create a loading component
+function VideoPlayerLoading() {
+  return (
+    <div className="w-full aspect-video bg-black/90 flex items-center justify-center">
+      <div className="text-center space-y-2">
+        <p className="text-muted-foreground">Loading player...</p>
+      </div>
+    </div>
+  );
+}
+
+// Dynamically import the video player component
+export function VideoPlayer(props: VideoPlayerProps) {
+  const [isMounted, setIsMounted] = useState(false);
+  const [currentProvider, setCurrentProvider] = useState<keyof typeof PROVIDERS>('NATIVE');
   const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <VideoPlayerLoading />;
+  }
 
   const getVideoUrl = () => {
     switch (currentProvider) {
       case 'EMBED_SU':
-        return type === 'movie'
-          ? `https://embed.su/embed/movie/${tmdbId}`
-          : `https://embed.su/embed/tv/${tmdbId}/${season}/${episode}`;
+        return props.type === 'movie'
+          ? `https://embed.su/embed/movie/${props.tmdbId}`
+          : `https://embed.su/embed/tv/${props.tmdbId}/${props.season}/${props.episode}`;
       
       case 'VIDLINK':
-        return type === 'movie'
-          ? `https://vidlink.pro/movie/${tmdbId}`
-          : `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}`;
+        return props.type === 'movie'
+          ? `https://vidlink.pro/movie/${props.tmdbId}`
+          : `https://vidlink.pro/tv/${props.tmdbId}/${props.season}/${props.episode}`;
       
       case 'VIDBINGE':
-        return type === 'movie'
-          ? `https://vidbinge.dev/embed/movie/${tmdbId}`
-          : `https://vidbinge.dev/embed/tv/${tmdbId}/${season}/${episode}`;
+        return props.type === 'movie'
+          ? `https://vidbinge.dev/embed/movie/${props.tmdbId}`
+          : `https://vidbinge.dev/embed/tv/${props.tmdbId}/${props.season}/${props.episode}`;
       
       case 'AUTOEMBED':
-        return type === 'movie'
-          ? `https://player.autoembed.cc/embed/movie/${tmdbId}`
-          : `https://player.autoembed.cc/embed/tv/${tmdbId}/${season}/${episode}`;
+        return props.type === 'movie'
+          ? `https://player.autoembed.cc/embed/movie/${props.tmdbId}`
+          : `https://player.autoembed.cc/embed/tv/${props.tmdbId}/${props.season}/${props.episode}`;
       
       default:
         return '';
@@ -76,6 +101,45 @@ export function VideoPlayer({ tmdbId, type, season, episode, show, initialSeason
     }
   };
 
+  const handleNativeProviderError = (error: Error) => {
+    if (error.message === 'PROVIDER_UNAUTHORIZED') {
+      // Switch to the next available provider
+      const nextProvider = Object.keys(PROVIDERS)[1] as keyof typeof PROVIDERS;
+      setCurrentProvider(nextProvider);
+      toast({
+        title: "Provider Changed",
+        description: "Native provider is not available. Switched to alternative provider.",
+      });
+    } else {
+      handleError();
+    }
+  };
+
+  const renderPlayer = () => {
+    if (currentProvider === 'NATIVE') {
+      return (
+        <ErrorBoundary onError={handleNativeProviderError}>
+          <NativePlayer
+            tmdbId={props.tmdbId}
+            type={props.type}
+            season={props.season}
+            episode={props.episode}
+          />
+        </ErrorBoundary>
+      );
+    }
+
+    return (
+      <iframe
+        src={getVideoUrl()}
+        className="w-full h-full border-0"
+        allowFullScreen
+        onError={handleError}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      />
+    );
+  };
+
   if (hasError) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-background">
@@ -92,19 +156,11 @@ export function VideoPlayer({ tmdbId, type, season, episode, show, initialSeason
 
   return (
     <div className="min-h-screen bg-black flex flex-col">
-      {/* Video Container - updated with max height */}
       <div className="relative w-full max-w-[1200px] mx-auto">
         <div className="relative w-full aspect-video">
-          <iframe
-            src={getVideoUrl()}
-            className="w-full h-full border-0"
-            allowFullScreen
-            onError={handleError}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          />
+          {renderPlayer()}
         </div>
         
-        {/* Server Select - moved below video */}
         <div className="mt-4 px-4">
           <ServerSelect
             currentServer={currentProvider}
@@ -113,10 +169,9 @@ export function VideoPlayer({ tmdbId, type, season, episode, show, initialSeason
         </div>
       </div>
 
-      {/* Episodes Grid (if TV show) */}
-      {type === 'tv' && show && initialSeason && (
+      {props.type === 'tv' && props.show && props.initialSeason && (
         <div className="flex-1 p-4 bg-black">
-          <EpisodeGrid show={show} initialSeason={initialSeason} />
+          <EpisodeGrid show={props.show} initialSeason={props.initialSeason} />
         </div>
       )}
     </div>

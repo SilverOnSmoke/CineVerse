@@ -3,10 +3,18 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Navbar } from '@/components/navbar';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from "sonner";
 import { Suspense } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
+
+function Footer() {
+  return (
+    <footer className="w-full border-t py-3 text-center text-sm text-muted-foreground">
+      <p>This site does not store any files on the server, we only linked to the media which is hosted on 3rd party services.</p>
+    </footer>
+  );
+}
 
 export const metadata: Metadata = {
   title: 'CineVerse - Watch Movies Online',
@@ -15,35 +23,30 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon.png', type: 'image/png' }
     ],
-    apple: [
-      { url: '/favicon.png', sizes: '180x180', type: 'image/png' }
-    ]
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
+interface RootLayoutProps {
   children: React.ReactNode;
-}) {
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} antialiased`}>
+      <body className={inter.className}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="relative min-h-screen flex flex-col">
-            <Suspense fallback={<div className="h-14 border-b" />}>
-              <Navbar />
-            </Suspense>
-            <main className="flex-1 container mx-auto px-4 py-4">
-              {children}
+          <div className="relative flex min-h-screen flex-col">
+            <Navbar />
+            <main className="flex-1">
+              <Suspense>{children}</Suspense>
             </main>
+            <Footer />
           </div>
           <Toaster />
         </ThemeProvider>
@@ -51,3 +54,7 @@ export default function RootLayout({
     </html>
   );
 }
+
+
+
+
