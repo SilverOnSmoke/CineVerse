@@ -33,8 +33,8 @@ Before you begin, ensure you have the following installed:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/cineverse.git
-cd cineverse
+git clone https://github.com/SilverOnSmoke/CineVerse.git
+cd CineVerse
 ```
 
 2. Install dependencies:
