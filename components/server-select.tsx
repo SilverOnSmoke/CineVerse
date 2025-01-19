@@ -15,11 +15,11 @@ interface ServerSelectProps {
 }
 
 const PROVIDERS = {
-  NATIVE: 'Native Player',
-  EMBED_SU: 'Server 1',
-  VIDLINK: 'Server 2',
-  VIDBINGE: 'Server 3',
-  AUTOEMBED: 'Server 4',
+  EMBED_SU: 'Server 1 (Embed.su)',
+  VIDLINK: 'Server 2 (VidLink)',
+  AUTOEMBED: 'Server 3 (AutoEmbed)',
+  VIDSRC: 'Server 4 (VidSrc)',
+  CINEVERSE: 'CineVerse (Main)',
 } as const;
 
 export function ServerSelect({ currentServer, onServerChange }: ServerSelectProps) {
@@ -31,13 +31,13 @@ export function ServerSelect({ currentServer, onServerChange }: ServerSelectProp
           <SelectValue placeholder="Select server" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="NATIVE">{PROVIDERS.NATIVE}</SelectItem>
+          <SelectItem value="CINEVERSE">{PROVIDERS.CINEVERSE}</SelectItem>
           <SelectItem value="EMBED_SU">{PROVIDERS.EMBED_SU}</SelectItem>
           <SelectItem value="VIDLINK">{PROVIDERS.VIDLINK}</SelectItem>
-          <SelectItem value="VIDBINGE">{PROVIDERS.VIDBINGE}</SelectItem>
           <SelectItem value="AUTOEMBED">{PROVIDERS.AUTOEMBED}</SelectItem>
+          <SelectItem value="VIDSRC">{PROVIDERS.VIDSRC}</SelectItem>
         </SelectContent>
       </Select>
     </div>
   );
-} 
+}

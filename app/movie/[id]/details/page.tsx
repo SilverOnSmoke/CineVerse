@@ -74,7 +74,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mb-16">
       {/* Hero Section */}
       <div className="relative min-h-[600px] flex items-end">
         {/* Background Image */}
@@ -91,10 +91,10 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
 
         {/* Content Container */}
         <div className="container relative z-10 pb-10">
-          <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
             {/* Poster - Only mobile adjustments */}
-            <div className="shrink-0 w-[180px] md:w-[300px] mx-auto md:mx-0">
-              <div className="aspect-[2/3] relative rounded-lg overflow-hidden">
+            <div className="shrink-0 w-[180px] md:w-[300px] mx-auto md:mx-0 mt-6 md:mt-0 md:ml-6 lg:ml-12">
+              <div className="aspect-[2/3] relative rounded-lg overflow-hidden shadow-lg">
                 <Image
                   src={getTMDBImageUrl(movie.poster_path, 'w500')}
                   alt={movie.title}
@@ -106,7 +106,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
             </div>
 
             {/* Info - Mobile optimizations */}
-            <div className="flex-1 space-y-4 text-center md:text-left">
+            <div className="flex-1 space-y-4 text-center md:text-left px-4 md:px-0">
               <div className="space-y-2">
                 <h1 className="text-3xl md:text-4xl font-bold">{movie.title}</h1>
                 <p className="text-muted-foreground">
@@ -149,19 +149,19 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
 
               {/* Tagline */}
               {movie.tagline && (
-                <p className="text-xl italic text-muted-foreground">
+                <p className="text-xl italic text-muted-foreground px-4 md:px-0">
                   &ldquo;{movie.tagline}&rdquo;
                 </p>
               )}
 
               {/* Overview */}
-              <div className="space-y-2">
+              <div className="space-y-2 px-4 md:px-0">
                 <h2 className="text-xl font-semibold">Overview</h2>
                 <p className="text-lg leading-relaxed text-muted-foreground">{movie.overview}</p>
               </div>
 
               {/* Genres - Center on mobile */}
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+              <div className="flex flex-wrap gap-2 justify-center md:justify-start px-4 md:px-0">
                 {movie.genres.map((genre) => (
                   <Badge key={genre.id} variant="secondary">
                     {genre.name}

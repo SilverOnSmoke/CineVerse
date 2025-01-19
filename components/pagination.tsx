@@ -18,13 +18,47 @@ interface PaginationControlProps {
   baseUrl: string;
 }
 
+function getPaginationItems(currentPage: number, totalPages: number) {
+  // For mobile, show fewer page numbers
+  const maxPagesOnMobile = 3;
+  const maxPagesOnDesktop = 5;
+
+  if (totalPages <= maxPagesOnDesktop) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const pages: (number | string)[] = [];
+
+  // Always show first and last page
+  if (currentPage <= maxPagesOnMobile) {
+    // For first few pages
+    pages.push(...Array.from({ length: maxPagesOnMobile }, (_, i) => i + 1));
+    pages.push('...', totalPages);
+  } else if (currentPage > totalPages - maxPagesOnMobile) {
+    // For last few pages
+    pages.push(1, '...');
+    pages.push(...Array.from({ length: maxPagesOnMobile }, (_, i) => 
+      totalPages - maxPagesOnMobile + i + 1
+    ));
+  } else {
+    // For middle pages
+    pages.push(1, '...');
+    const startPage = currentPage - 1;
+    const endPage = currentPage + 1;
+    pages.push(startPage, currentPage, endPage);
+    pages.push('...', totalPages);
+  }
+
+  return pages;
+}
+
 export function PaginationControl({ currentPage, totalPages, baseUrl }: PaginationControlProps) {
   const searchParams = useSearchParams();
   const pages = getPaginationItems(currentPage, totalPages);
 
   return (
-    <Pagination className="my-6">
-      <PaginationContent>
+    <Pagination className="my-6 flex justify-center">
+      <PaginationContent className="flex flex-wrap justify-center items-center gap-1 sm:gap-2">
         <PaginationItem>
           <PaginationPrevious
             href={`${baseUrl}?page=${currentPage - 1}`}
@@ -33,7 +67,7 @@ export function PaginationControl({ currentPage, totalPages, baseUrl }: Paginati
         </PaginationItem>
 
         {pages.map((page, i) => (
-          <PaginationItem key={i}>
+          <PaginationItem key={i} className="hidden sm:block">
             {page === '...' ? (
               <PaginationEllipsis />
             ) : (
@@ -47,6 +81,12 @@ export function PaginationControl({ currentPage, totalPages, baseUrl }: Paginati
           </PaginationItem>
         ))}
 
+        <PaginationItem className="sm:hidden">
+          <PaginationLink>
+            {currentPage} / {totalPages}
+          </PaginationLink>
+        </PaginationItem>
+
         <PaginationItem>
           <PaginationNext
             href={`${baseUrl}?page=${currentPage + 1}`}
@@ -57,23 +97,3 @@ export function PaginationControl({ currentPage, totalPages, baseUrl }: Paginati
     </Pagination>
   );
 }
-
-function getPaginationItems(currentPage: number, totalPages: number) {
-  const pages: (number | string)[] = [];
-  
-  if (totalPages <= 7) {
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(i);
-    }
-  } else {
-    if (currentPage <= 3) {
-      pages.push(1, 2, 3, 4, '...', totalPages);
-    } else if (currentPage >= totalPages - 2) {
-      pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-    } else {
-      pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
-    }
-  }
-  
-  return pages;
-} 

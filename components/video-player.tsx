@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 import { ServerSelect } from '@/components/server-select';
 import { EpisodeGrid } from '@/components/episode-grid';
 import type { TVShowDetails, TVShowSeason } from '@/types/tmdb';
-import { NativePlayer } from '@/components/native-player';
 import { ErrorBoundary } from '@/components/error-boundary';
 
 interface VideoPlayerProps {
@@ -20,11 +19,11 @@ interface VideoPlayerProps {
 }
 
 const PROVIDERS = {
-  NATIVE: 'Native Player',
-  EMBED_SU: 'Server 1',
-  VIDLINK: 'Server 2',
-  VIDBINGE: 'Server 3',
-  AUTOEMBED: 'Server 4',
+  CINEVERSE: 'CineVerse (Main)',
+  EMBED_SU: 'Server 1 (Embed SU)',
+  VIDLINK: 'Server 2 (VidLink)',
+  AUTOEMBED: 'Server 3 (AutoEmbed)',
+  VIDSRC: 'Server 4 (VidSrc)',
 } as const;
 
 // Create a loading component
@@ -41,7 +40,7 @@ function VideoPlayerLoading() {
 // Dynamically import the video player component
 export function VideoPlayer(props: VideoPlayerProps) {
   const [isMounted, setIsMounted] = useState(false);
-  const [currentProvider, setCurrentProvider] = useState<keyof typeof PROVIDERS>('NATIVE');
+  const [currentProvider, setCurrentProvider] = useState<keyof typeof PROVIDERS>('CINEVERSE');
   const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
 
@@ -55,6 +54,11 @@ export function VideoPlayer(props: VideoPlayerProps) {
 
   const getVideoUrl = () => {
     switch (currentProvider) {
+      case 'CINEVERSE':
+        return props.type === 'movie'
+          ? `https://streamnest-htje.onrender.com/embed/movie/${props.tmdbId}`
+          : `https://streamnest-htje.onrender.com/embed/tv/${props.tmdbId}/${props.season}/${props.episode}${props.type === 'tv' ? '?nextbutton=true' : ''}`;
+      
       case 'EMBED_SU':
         return props.type === 'movie'
           ? `https://embed.su/embed/movie/${props.tmdbId}`
@@ -65,15 +69,15 @@ export function VideoPlayer(props: VideoPlayerProps) {
           ? `https://vidlink.pro/movie/${props.tmdbId}`
           : `https://vidlink.pro/tv/${props.tmdbId}/${props.season}/${props.episode}`;
       
-      case 'VIDBINGE':
-        return props.type === 'movie'
-          ? `https://vidbinge.dev/embed/movie/${props.tmdbId}`
-          : `https://vidbinge.dev/embed/tv/${props.tmdbId}/${props.season}/${props.episode}`;
-      
       case 'AUTOEMBED':
         return props.type === 'movie'
           ? `https://player.autoembed.cc/embed/movie/${props.tmdbId}`
           : `https://player.autoembed.cc/embed/tv/${props.tmdbId}/${props.season}/${props.episode}`;
+      
+      case 'VIDSRC':
+        return props.type === 'movie'
+          ? `https://vidsrc.to/embed/movie/${props.tmdbId}`
+          : `https://vidsrc.to/embed/tv/${props.tmdbId}/${props.season}/${props.episode}`;
       
       default:
         return '';
@@ -81,7 +85,7 @@ export function VideoPlayer(props: VideoPlayerProps) {
   };
 
   const handleError = () => {
-    const providers: Array<keyof typeof PROVIDERS> = ['EMBED_SU', 'VIDLINK', 'VIDBINGE', 'AUTOEMBED'];
+    const providers: Array<keyof typeof PROVIDERS> = ['CINEVERSE', 'EMBED_SU', 'VIDLINK', 'AUTOEMBED', 'VIDSRC'];
     const currentIndex = providers.indexOf(currentProvider);
     const nextProvider = providers[currentIndex + 1];
 
@@ -101,45 +105,6 @@ export function VideoPlayer(props: VideoPlayerProps) {
     }
   };
 
-  const handleNativeProviderError = (error: Error) => {
-    if (error.message === 'PROVIDER_UNAUTHORIZED') {
-      // Switch to the next available provider
-      const nextProvider = Object.keys(PROVIDERS)[1] as keyof typeof PROVIDERS;
-      setCurrentProvider(nextProvider);
-      toast({
-        title: "Provider Changed",
-        description: "Native provider is not available. Switched to alternative provider.",
-      });
-    } else {
-      handleError();
-    }
-  };
-
-  const renderPlayer = () => {
-    if (currentProvider === 'NATIVE') {
-      return (
-        <ErrorBoundary onError={handleNativeProviderError}>
-          <NativePlayer
-            tmdbId={props.tmdbId}
-            type={props.type}
-            season={props.season}
-            episode={props.episode}
-          />
-        </ErrorBoundary>
-      );
-    }
-
-    return (
-      <iframe
-        src={getVideoUrl()}
-        className="w-full h-full border-0"
-        allowFullScreen
-        onError={handleError}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      />
-    );
-  };
-
   if (hasError) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-background">
@@ -155,10 +120,16 @@ export function VideoPlayer(props: VideoPlayerProps) {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col pt-16 pb-16">
       <div className="relative w-full max-w-[1200px] mx-auto">
         <div className="relative w-full aspect-video">
-          {renderPlayer()}
+          <iframe
+            src={getVideoUrl()}
+            className="w-full h-full border-0"
+            allowFullScreen
+            onError={handleError}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          />
         </div>
         
         <div className="mt-4 px-4">
@@ -176,4 +147,4 @@ export function VideoPlayer(props: VideoPlayerProps) {
       )}
     </div>
   );
-} 
+}
