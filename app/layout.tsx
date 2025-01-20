@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
+import { FooterModal } from "@/components/footer-modal";
 import { Toaster } from "sonner";
 import { Suspense } from "react";
 
@@ -10,7 +11,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 function Footer() {
   return (
-    <footer className="w-full border-t py-3 text-center text-sm text-muted-foreground">
+    <footer className="w-full border-t py-3 text-center text-sm text-muted-foreground hidden md:block">
       <p>
         CineVerse does not host or store videos; all content is provided by
         unaffiliated third parties and accessed through our website.
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               <Suspense>{children}</Suspense>
             </main>
             <Footer />
+            <FooterModal />
           </div>
           <Toaster />
         </ThemeProvider>

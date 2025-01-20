@@ -14,7 +14,7 @@ interface MovieGridProps {
 
 export function MovieGrid({ items }: MovieGridProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 sm:p-6 md:p-8 lg:p-10">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 sm:p-6 md:p-8 lg:p-10 pb-16">
       {items.map((item) => (
         <div key={item.id} className="relative group">
           <div className="aspect-[2/3] relative rounded-lg overflow-hidden">
@@ -45,7 +45,7 @@ export function MovieGrid({ items }: MovieGridProps) {
               </div>
             </div>
           </div>
-          <h3 className="mt-2 text-sm md:text-base font-semibold text-gray-800 dark:text-gray-200 line-clamp-1 hover:text-primary transition-colors">
+          <h3 className="mt-3 px-2 text-base md:text-lg font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 md:line-clamp-1 hover:text-primary transition-colors">
             {item.media_type === 'movie' ? item.title : item.name}
           </h3>
         </div>

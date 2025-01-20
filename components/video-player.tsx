@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ServerSelect } from '@/components/server-select';
+import { SourceSelect } from '@/components/source-select';
 import { EpisodeGrid } from '@/components/episode-grid';
 import type { TVShowDetails, TVShowSeason } from '@/types/tmdb';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -26,7 +27,6 @@ const PROVIDERS = {
   VIDSRC: 'Server 4 (VidSrc)',
 } as const;
 
-// Create a loading component
 function VideoPlayerLoading() {
   return (
     <div className="w-full aspect-video bg-black/90 flex items-center justify-center">
@@ -37,10 +37,10 @@ function VideoPlayerLoading() {
   );
 }
 
-// Dynamically import the video player component
 export function VideoPlayer(props: VideoPlayerProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [currentProvider, setCurrentProvider] = useState<keyof typeof PROVIDERS>('CINEVERSE');
+  const [currentSource, setCurrentSource] = useState<string>('Poseidon');
   const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
 
@@ -55,9 +55,13 @@ export function VideoPlayer(props: VideoPlayerProps) {
   const getVideoUrl = () => {
     switch (currentProvider) {
       case 'CINEVERSE':
-        return props.type === 'movie'
+        const baseUrl = props.type === 'movie'
           ? `https://streamnest-htje.onrender.com/embed/movie/${props.tmdbId}`
           : `https://streamnest-htje.onrender.com/embed/tv/${props.tmdbId}/${props.season}/${props.episode}${props.type === 'tv' ? '?nextbutton=true' : ''}`;
+        
+        // Add provider parameter if it's not already in the URL
+        const separator = baseUrl.includes('?') ? '&' : '?';
+        return `${baseUrl}${separator}provider=${currentSource}`;
       
       case 'EMBED_SU':
         return props.type === 'movie'
@@ -132,11 +136,17 @@ export function VideoPlayer(props: VideoPlayerProps) {
           />
         </div>
         
-        <div className="mt-4 px-4">
+        <div className="mt-4 px-4 flex items-center gap-4 flex-wrap">
           <ServerSelect
             currentServer={currentProvider}
             onServerChange={setCurrentProvider}
           />
+          {currentProvider === 'CINEVERSE' && (
+            <SourceSelect
+              currentSource={currentSource}
+              onSourceChange={setCurrentSource}
+            />
+          )}
         </div>
       </div>
 

@@ -39,7 +39,7 @@ async function TrendingList({ searchParams }: { searchParams: { page?: string } 
   return (
     <div>
       <MovieGrid items={trendingWithType} />
-      <div className="mt-6">
+      <div className="mt-6 pb-20">
         <Suspense fallback={<div>Loading pagination...</div>}>
           <PaginationControl
             currentPage={currentPage}

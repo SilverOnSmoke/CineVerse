@@ -33,13 +33,14 @@ async function MovieSection({ type }: { type: string }) {
     }));
 
     return (
-      <Carousel 
-        opts={{ 
-          align: 'start', 
-          slidesToScroll: 'auto',
-          containScroll: 'trimSnaps'
-        }}
-      >
+      <Carousel
+       opts={{
+         align: 'start',
+         slidesToScroll: 'auto',
+         containScroll: 'trimSnaps'
+       }}
+       className="pb-16"
+     >
         <CarouselContent className="-ml-4">
           {moviesWithType.map((movie) => (
             <CarouselItem key={movie.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
@@ -68,7 +69,7 @@ async function MovieSection({ type }: { type: string }) {
                     </div>
                   </div>
                 </div>
-                <h3 className="mt-2 text-sm md:text-base font-semibold text-gray-800 dark:text-gray-200 line-clamp-1 hover:text-primary transition-colors">
+                <h3 className="mt-3 px-2 text-base md:text-lg font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 md:line-clamp-1 hover:text-primary transition-colors">
                   {movie.title}
                 </h3>
               </div>
