@@ -11,6 +11,21 @@ import type { TVShowDetails } from '@/types/tmdb';
 import { Button } from '@/components/ui/button';
 import { Play, Youtube } from 'lucide-react';
 import Link from 'next/link';
+import axios from 'axios';
+
+const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+const BASE_URL = "https://api.themoviedb.org/3";
+
+async function getTvShowLogos(tvShowId: number) {
+  const response = await axios.get(`${BASE_URL}/tv/${tvShowId}/images`, {
+    params: { api_key: API_KEY, language: "en" },
+  });
+  return response.data.logos || [];
+}
+
+function constructImageUrl(baseUrl: string, size: string, filePath: string): string {
+  return `${baseUrl}${size}${filePath}`;
+}
 
 interface TVShowDetailsPageProps {
   params: { id: string };
@@ -50,9 +65,11 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 3600; // Revalidate every hour
 
 export default async function TVShowDetailsPage({ params }: TVShowDetailsPageProps) {
-  const [show, videos] = await Promise.all([
+  const [show, videos, config, tvLogos] = await Promise.all([
     fetchTMDBApi<TVShowDetails>(`/tv/${params.id}`).catch(() => null),
     fetchTMDBApi<VideoResult>(`/tv/${params.id}/videos`).catch(() => ({ results: [] })),
+    fetchTMDBApi<{ images: { secure_base_url: string; logo_sizes: string[] } }>(`/configuration`),
+    getTvShowLogos(Number(params.id)),
   ]);
 
   if (!show) {
@@ -65,9 +82,9 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
 
   return (
     <div className="space-y-6 mb-16">
-      {/* Hero Section - Updated layout */}
-      <div className="relative min-h-[600px] flex items-end">
-        {/* Background Image */}
+      {/* Hero Section */}
+      <div className="relative min-h-[80vh] flex items-center pt-20">
+        {/* Background Image with darker overlay */}
         <div className="absolute inset-0">
           <Image
             src={getTMDBImageUrl(show.backdrop_path || show.poster_path)}
@@ -76,66 +93,73 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background to-background/40" />
         </div>
 
         {/* Content Container */}
-        <div className="container relative z-10 pb-10">
-          <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-            {/* Poster */}
-            <div className="shrink-0 w-[200px] md:w-[300px] mx-auto md:mx-0 mt-6 md:mt-0 md:ml-6 lg:ml-12">
-              <div className="aspect-[2/3] relative rounded-lg overflow-hidden shadow-lg">
+        <div className="container relative z-10">
+          <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
+            {/* Logo Section */}
+            {tvLogos.length > 0 && (
+              <div className="w-full max-w-[300px] sm:max-w-[400px] mb-8 sm:mb-10 px-4 sm:px-0">
                 <Image
-                  src={getTMDBImageUrl(show.poster_path)}
-                  alt={show.name}
-                  fill
-                  className="object-cover"
+                  src={constructImageUrl(
+                    config.images.secure_base_url,
+                    "original",
+                    tvLogos[0].file_path
+                  )}
+                  alt={`${show.name} Logo`}
+                  width={400}
+                  height={200}
+                  className="object-contain w-full"
                   priority
                 />
               </div>
-            </div>
+            )}
 
-            {/* Info */}
-            <div className="flex-1 space-y-4 text-center md:text-left px-4 md:px-0">
-              <div className="space-y-2">
-                <h1 className="text-3xl md:text-4xl font-bold">{show.name}</h1>
-                <p className="text-xl text-muted-foreground">
-                  {new Date(show.first_air_date).getFullYear()} • {show.episode_run_time?.[0]} min
-                </p>
-              </div>
+            {/* Show Info */}
+            <div className="space-y-6 w-full px-4 sm:px-0">
+              {!tvLogos.length && (
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">{show.name}</h1>
+              )}
+              <p className="text-lg sm:text-xl text-muted-foreground">
+                {new Date(show.first_air_date).getFullYear()} • {show.episode_run_time?.[0]} min
+              </p>
 
-              {/* Rating */}
-              <div className="flex items-center justify-center md:justify-start gap-2">
-                <div className="bg-primary/10 px-2 py-1 rounded">
-                  <p className="text-lg font-semibold">
-                    {(show.vote_average * 10).toFixed(0)}%
-                  </p>
-                </div>
-                <span className="text-muted-foreground">User Score</span>
-              </div>
-
-              {/* Add Buttons after rating */}
-              <div className="flex items-center justify-center md:justify-start gap-2">
-                <Button asChild>
-                  <Link href={`/tv/${params.id}?season=1&episode=1`}>
-                    <Play className="h-4 w-4 mr-2" />
-                    Watch Now
-                  </Link>
-                </Button>
-                
-                {trailer && (
-                  <Button variant="outline" asChild>
-                    <Link 
-                      href={`https://www.youtube.com/watch?v=${trailer.key}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Youtube className="h-4 w-4 mr-2" />
-                      Watch Trailer
+              {/* Buttons and Rating Section */}
+              <div className="flex flex-col items-center gap-6">
+                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
+                  <Button size="lg" className="w-full sm:w-auto min-w-[160px]" asChild>
+                    <Link href={`/tv/${params.id}?season=1&episode=1`}>
+                      <Play className="h-5 w-5 mr-2" />
+                      Watch Now
                     </Link>
                   </Button>
-                )}
-              </div>
+                  
+                  {trailer && (
+                    <Button size="lg" variant="outline" className="w-full sm:w-auto min-w-[160px]" asChild>
+                      <Link
+                        href={`https://www.youtube.com/watch?v=${trailer.key}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Youtube className="h-5 w-5 mr-2" />
+                        Watch Trailer
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 px-3 py-1.5 rounded-md">
+                    <p className="text-xl font-semibold">
+                      {(show.vote_average * 10).toFixed(0)}%
+                    </p>
+                  </div>
+                  <span className="text-lg text-muted-foreground">User Score</span>
+                </div>
+                </div>
+                
 
               {/* Tagline */}
               {show.tagline && (
@@ -145,13 +169,13 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
               )}
 
               {/* Overview */}
-              <div className="space-y-2 px-4 md:px-0">
-                <h2 className="text-xl font-semibold">Overview</h2>
-                <p className="text-lg leading-relaxed text-muted-foreground">{show.overview}</p>
+              <div className="space-y-3">
+                <h2 className="text-xl sm:text-2xl font-semibold">Overview</h2>
+                <p className="text-base sm:text-lg leading-relaxed text-muted-foreground">{show.overview}</p>
               </div>
 
               {/* Genres */}
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start px-4 md:px-0">
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                 {show.genres.map((genre) => (
                   <Badge key={genre.id} variant="secondary">
                     {genre.name}
@@ -174,7 +198,7 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto pb-8">
               <Card>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
                   <div className="space-y-1">
@@ -223,7 +247,7 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
           </TabsContent>
 
           <TabsContent value="cast" className="space-y-6">
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-6xl mx-auto pb-8">
               <Suspense fallback={<div>Loading cast...</div>}>
                 <TVCredits tvId={params.id} />
               </Suspense>
@@ -231,7 +255,7 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
           </TabsContent>
 
           <TabsContent value="episodes" className="space-y-6">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto pb-8">
               <Card>
                 <CardContent className="p-6">
                   <h2 className="text-2xl font-bold mb-4">Latest Season</h2>
@@ -246,7 +270,7 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
           </TabsContent>
 
           <TabsContent value="reviews" className="space-y-6">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto pb-8">
               <Suspense fallback={<div>Loading reviews...</div>}>
                 <p className="text-center text-muted-foreground">No reviews yet.</p>
               </Suspense>

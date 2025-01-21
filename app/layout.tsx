@@ -6,6 +6,7 @@ import { Navbar } from "@/components/navbar";
 import { FooterModal } from "@/components/footer-modal";
 import { Toaster } from "sonner";
 import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <FooterModal />
           </div>
           <Toaster />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>

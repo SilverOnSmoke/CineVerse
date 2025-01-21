@@ -13,6 +13,21 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Play, Youtube } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import axios from 'axios';
+
+const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+const BASE_URL = "https://api.themoviedb.org/3";
+
+async function getMovieLogos(movieId: number) {
+  const response = await axios.get(`${BASE_URL}/movie/${movieId}/images`, {
+    params: { api_key: API_KEY, language: "en" },
+  });
+  return response.data.logos || [];
+}
+
+function constructImageUrl(baseUrl: string, size: string, filePath: string): string {
+  return `${baseUrl}${size}${filePath}`;
+}
 
 interface MovieDetailsPageProps {
   params: {
@@ -59,9 +74,11 @@ interface VideoResult {
 }
 
 export default async function MovieDetailsPage({ params }: MovieDetailsPageProps) {
-  const [movie, videos] = await Promise.all([
+  const [movie, videos, config, movieLogos] = await Promise.all([
     fetchTMDBApi<MovieDetails>(`/movie/${params.id}`),
     fetchTMDBApi<VideoResult>(`/movie/${params.id}/videos`),
+    fetchTMDBApi<{ images: { secure_base_url: string; logo_sizes: string[] } }>(`/configuration`),
+    getMovieLogos(Number(params.id)),
   ]);
 
   if (!movie) {
@@ -76,8 +93,8 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
   return (
     <div className="space-y-6 mb-16">
       {/* Hero Section */}
-      <div className="relative min-h-[600px] flex items-end">
-        {/* Background Image */}
+      <div className="relative min-h-[80vh] flex items-center pt-20">
+        {/* Background Image with darker overlay */}
         <div className="absolute inset-0">
           <Image
             src={getTMDBImageUrl(movie.backdrop_path || movie.poster_path, 'original')}
@@ -86,65 +103,72 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background to-background/40" />
         </div>
 
         {/* Content Container */}
-        <div className="container relative z-10 pb-10">
-          <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-            {/* Poster - Only mobile adjustments */}
-            <div className="shrink-0 w-[180px] md:w-[300px] mx-auto md:mx-0 mt-6 md:mt-0 md:ml-6 lg:ml-12">
-              <div className="aspect-[2/3] relative rounded-lg overflow-hidden shadow-lg">
+        <div className="container relative z-10">
+          <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
+            {/* Logo Section */}
+            {movieLogos.length > 0 && (
+              <div className="w-full max-w-[300px] sm:max-w-[400px] mb-8 sm:mb-10 px-4 sm:px-0">
                 <Image
-                  src={getTMDBImageUrl(movie.poster_path, 'w500')}
-                  alt={movie.title}
-                  fill
-                  className="object-cover"
+                  src={constructImageUrl(
+                    config.images.secure_base_url,
+                    "original",
+                    movieLogos[0].file_path
+                  )}
+                  alt={`${movie.title} Logo`}
+                  width={400}
+                  height={200}
+                  className="object-contain w-full"
                   priority
                 />
               </div>
-            </div>
+            )}
 
-            {/* Info - Mobile optimizations */}
-            <div className="flex-1 space-y-4 text-center md:text-left px-4 md:px-0">
-              <div className="space-y-2">
-                <h1 className="text-3xl md:text-4xl font-bold">{movie.title}</h1>
-                <p className="text-muted-foreground">
-                  {new Date(movie.release_date).getFullYear()} • {formatRuntime(movie.runtime)}
-                </p>
-              </div>
+            {/* Movie Info */}
+            <div className="space-y-6 w-full px-4 sm:px-0">
+              {!movieLogos.length && (
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">{movie.title}</h1>
+              )}
+              <p className="text-lg sm:text-xl text-muted-foreground">
+                {new Date(movie.release_date).getFullYear()} • {formatRuntime(movie.runtime)}
+              </p>
 
-              {/* Rating - Centered on mobile */}
-              <div className="flex items-center justify-center md:justify-start gap-2">
-                <div className="bg-primary/10 px-2 py-1 rounded">
-                  <p className="text-lg font-semibold">
-                    {(movie.vote_average * 10).toFixed(0)}%
-                  </p>
-                </div>
-                <span className="text-muted-foreground">User Score</span>
-              </div>
-
-              {/* Add Buttons after rating */}
-              <div className="flex items-center justify-center md:justify-start gap-2">
-                <Button asChild>
-                  <Link href={`/movie/${params.id}`}>
-                    <Play className="h-4 w-4 mr-2" />
-                    Watch Now
-                  </Link>
-                </Button>
-                
-                {trailer && (
-                  <Button variant="outline" asChild>
-                    <Link 
-                      href={`https://www.youtube.com/watch?v=${trailer.key}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Youtube className="h-4 w-4 mr-2" />
-                      Watch Trailer
+              {/* Buttons and Rating Section */}
+              <div className="flex flex-col items-center gap-6">
+                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
+                  <Button size="lg" className="w-full sm:w-auto min-w-[160px]" asChild>
+                    <Link href={`/movie/${params.id}`}>
+                      <Play className="h-5 w-5 mr-2" />
+                      Watch Now
                     </Link>
                   </Button>
-                )}
+                  
+                  {trailer && (
+                    <Button size="lg" variant="outline" className="w-full sm:w-auto min-w-[160px]" asChild>
+                      <Link
+                        href={`https://www.youtube.com/watch?v=${trailer.key}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Youtube className="h-5 w-5 mr-2" />
+                        Watch Trailer
+                      </Link>
+                    </Button>
+                  )}
+                  </div>
+                  
+                
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 px-3 py-1.5 rounded-md">
+                    <p className="text-xl font-semibold">
+                      {(movie.vote_average * 10).toFixed(0)}%
+                    </p>
+                  </div>
+                  <span className="text-lg text-muted-foreground">User Score</span>
+                </div>
               </div>
 
               {/* Tagline */}
@@ -155,13 +179,13 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
               )}
 
               {/* Overview */}
-              <div className="space-y-2 px-4 md:px-0">
-                <h2 className="text-xl font-semibold">Overview</h2>
-                <p className="text-lg leading-relaxed text-muted-foreground">{movie.overview}</p>
+              <div className="space-y-3">
+                <h2 className="text-xl sm:text-2xl font-semibold">Overview</h2>
+                <p className="text-base sm:text-lg leading-relaxed text-muted-foreground">{movie.overview}</p>
               </div>
 
-              {/* Genres - Center on mobile */}
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start px-4 md:px-0">
+              {/* Genres */}
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                 {movie.genres.map((genre) => (
                   <Badge key={genre.id} variant="secondary">
                     {genre.name}
@@ -183,7 +207,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto pb-8">
               <Card>
                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 p-4 md:p-6">
                   <div className="space-y-1">
@@ -230,7 +254,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
           </TabsContent>
 
           <TabsContent value="cast" className="space-y-6">
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-6xl mx-auto pb-8">
               <Suspense fallback={<div>Loading cast...</div>}>
                 <MovieCredits movieId={params.id} />
               </Suspense>
@@ -238,7 +262,7 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
           </TabsContent>
 
           <TabsContent value="reviews" className="space-y-6">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto pb-8">
               <Suspense fallback={<div>Loading reviews...</div>}>
                 <MovieReviews movieId={params.id} />
               </Suspense>
