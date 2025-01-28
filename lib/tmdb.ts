@@ -9,6 +9,8 @@ export const getTMDBImageUrl = (path: string, size: string = 'original') => {
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+const shouldLog = process.env.NEXT_PUBLIC_ENABLE_API_LOGS === 'true' && process.env.NODE_ENV === 'development';
+
 export async function fetchTMDBApi<T>(
   endpoint: string,
   params: Record<string, string> = {},
@@ -33,7 +35,9 @@ export async function fetchTMDBApi<T>(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      console.log(`Attempting to fetch: ${url.toString()}`);
+      if (shouldLog) {
+        console.log(`Attempting to fetch: ${url.toString()}`);
+      }
 
       const response = await fetch(url.toString(), {
         next: { 
@@ -54,12 +58,16 @@ export async function fetchTMDBApi<T>(
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error(`Attempt ${i + 1} failed:`, error);
+      if (shouldLog) {
+        console.error(`Attempt ${i + 1} failed:`, error);
+      }
       lastError = error as Error;
       
       if (i < retries - 1) {
         const waitTime = Math.pow(2, i) * 1000;
-        console.log(`Waiting ${waitTime}ms before retry...`);
+        if (shouldLog) {
+          console.log(`Waiting ${waitTime}ms before retry...`);
+        }
         await wait(waitTime);
         continue;
       }

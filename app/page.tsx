@@ -14,7 +14,7 @@ import {
 import { MovieCarousel } from '@/components/movie-carousel';
 import { fetchTMDBApi } from '@/lib/tmdb';
 import { getTMDBImageUrl } from '@/lib/tmdb';
-import type { MovieResponse } from '@/types/tmdb';
+import type { MovieResponse, MovieDetails } from '@/types/tmdb';
 
 function LoadingFallback() {
   return <div className="animate-pulse">Loading...</div>;
@@ -93,7 +93,19 @@ export default async function Home() {
         <Suspense fallback={<LoadingFallback />}>
           <MovieCarousel
             movies={await fetchTMDBApi<MovieResponse>('/trending/movie/day')
-              .then(data => data.results.map(movie => ({ ...movie, media_type: 'movie' as const })))
+              .then(async data => {
+                const moviePromises = data.results.map(async movie => {
+                  const details = await fetchTMDBApi<MovieDetails>(`/movie/${movie.id}`, {
+                    append_to_response: 'images'
+                  });
+                  return {
+                    ...movie,
+                    media_type: 'movie' as const,
+                    images: details.images
+                  };
+                });
+                return Promise.all(moviePromises);
+              })
               .catch(() => [])}
           />
         </Suspense>

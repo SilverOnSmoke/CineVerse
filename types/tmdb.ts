@@ -8,6 +8,17 @@ export interface Movie {
   release_date: string;
   genre_ids: number[];
   media_type: 'movie';
+  images?: {
+    logos: Array<{
+      file_path: string;
+      aspect_ratio: number;
+      height: number;
+      width: number;
+      vote_average: number;
+      vote_count: number;
+      iso_639_1: string | null;
+    }>;
+  };
 }
 
 export interface TVShow {
