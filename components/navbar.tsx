@@ -101,9 +101,9 @@ export function Navbar() {
 
             {/* Desktop Search */}
             <div className="flex items-center space-x-4 pr-6 md:pr-8 lg:pr-12">
-              <Link href="/search" className="flex items-center">
-                <Search className="h-4 w-4 transition-colors hover:text-primary" />
-                <span className="sr-only">Search</span>
+              <Link href="/search" className="flex items-center px-4 py-2 rounded-lg border border-muted transition-all duration-200 hover:bg-primary/5 hover:border-primary text-sm font-bold text-muted-foreground hover:text-primary">
+                <Search className="h-4 w-4 transition-colors text-muted-foreground group-hover:text-primary mr-2" />
+                Search
               </Link>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, Info } from 'lucide-react';
+import { Play, Info, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { 
@@ -17,7 +17,11 @@ import { getTMDBImageUrl } from '@/lib/tmdb';
 import type { MovieResponse, MovieDetails } from '@/types/tmdb';
 
 function LoadingFallback() {
-  return <div className="animate-pulse">Loading...</div>;
+  return (
+    <div className="flex items-center justify-center py-8">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
 }
 
 function ErrorFallback() {

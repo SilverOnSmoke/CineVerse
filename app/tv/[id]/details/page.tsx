@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { TVCredits } from '@/components/tv-credits';
 import type { TVShowDetails } from '@/types/tmdb';
 import { Button } from '@/components/ui/button';
-import { Play, Youtube } from 'lucide-react';
+import { Play, Youtube, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import axios from 'axios';
 
@@ -248,7 +248,11 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
 
           <TabsContent value="cast" className="space-y-6">
             <div className="max-w-6xl mx-auto pb-8">
-              <Suspense fallback={<div>Loading cast...</div>}>
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }>
                 <TVCredits tvId={params.id} />
               </Suspense>
             </div>
@@ -271,7 +275,11 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
 
           <TabsContent value="reviews" className="space-y-6">
             <div className="max-w-4xl mx-auto pb-8">
-              <Suspense fallback={<div>Loading reviews...</div>}>
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }>
                 <p className="text-center text-muted-foreground">No reviews yet.</p>
               </Suspense>
             </div>

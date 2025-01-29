@@ -7,6 +7,7 @@ import { FooterModal } from "@/components/footer-modal";
 import { Toaster } from "sonner";
 import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/react";
+import { Loader2 } from "lucide-react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -47,7 +48,15 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <div className="relative flex min-h-screen flex-col">
             <Navbar />
             <main className="flex-1">
-              <Suspense>{children}</Suspense>
+              <Suspense fallback={
+                <div className="flex items-center justify-center min-h-[50vh]">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                </div>
+              }>
+                {children}
+              </Suspense>
             </main>
             <Footer />
             <FooterModal />

@@ -78,10 +78,7 @@ export function EpisodeGrid({ show, initialSeason }: EpisodeGridProps) {
         <SelectTrigger className="w-[180px] mb-6 bg-transparent border-gray-800">
           <SelectValue>
             {isLoading ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading...
-              </div>
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               `Season ${currentSeason}`
             )}
