@@ -90,18 +90,18 @@ export function MovieCarousel({ movies }: MovieCarouselProps) {
         <CarouselContent>
           {movies.map((movie) => (
             <CarouselItem key={movie.id}>
-              <div className="relative aspect-[16/9] md:aspect-[21/9] overflow-hidden rounded-lg">
+              <div className="relative aspect-[16/9] md:aspect-[21/9] overflow-hidden rounded-lg animate-fade-in">
                 <Image
                   src={getTMDBImageUrl(movie.backdrop_path, 'original')}
                   alt={movie.title}
                   fill
-                  className="object-cover"
+                  className="object-cover animate-fade-in"
                   priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background from-10% via-background/80 to-transparent" />
                 
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center w-full px-4 md:px-6 space-y-3 md:space-y-4 max-h-full overflow-hidden">
+                  <div className="text-center w-full px-4 md:px-6 space-y-3 md:space-y-4 max-h-full overflow-hidden [&>*]:opacity-0 [&>*]:animate-slide-up [&>*]:animation-delay-300">
                     {movie.images?.logos?.length ? (
                       <div className="relative h-14 sm:h-20 md:h-28 lg:h-32 max-w-[85%] sm:max-w-[75%] md:max-w-[65%] mx-auto">
                         <Image
@@ -113,7 +113,7 @@ export function MovieCarousel({ movies }: MovieCarouselProps) {
                           )}
                           alt={movie.title}
                           fill
-                          className="object-contain drop-shadow-lg"
+                          className="object-contain drop-shadow-lg opacity 0 animate-slide-up animation-delay-300"
                           priority
                         />
                       </div>
@@ -123,11 +123,11 @@ export function MovieCarousel({ movies }: MovieCarouselProps) {
                       </h2>
                     )}
                     
-                    <p className="hidden sm:block text-sm md:text-base text-muted-foreground line-clamp-2 md:line-clamp-3 max-w-2xl mx-auto">
+                    <p className="hidden sm:block text-sm md:text-base text-muted-foreground line-clamp-2 md:line-clamp-3 max-w-2xl mx-auto opacity-0 animate-slide-up animation-delay-500">
                       {movie.overview}
                     </p>
                     
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 opacity-0 animate-slide-up animation-delay-700">
                       <Button 
                         asChild 
                         size="sm" 

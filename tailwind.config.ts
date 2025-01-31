@@ -62,6 +62,26 @@ const config: Config = {
         },
       },
       keyframes: {
+        'fade-in': {
+          '0%': { 
+            opacity: '0',
+            transform: 'scale(1.05)' 
+          },
+          '100%': { 
+            opacity: '1',
+            transform: 'scale(1)' 
+          }
+        },
+        'slide-up': {
+          '0%': { 
+            opacity: '0',
+            transform: 'translateY(10px)' 
+          },
+          '100%': { 
+            opacity: '1',
+            transform: 'translateY(0)' 
+          }
+        },
         'accordion-down': {
           from: {
             height: '0',
@@ -80,6 +100,8 @@ const config: Config = {
         },
       },
       animation: {
+        'fade-in': 'fade-in 0.8s ease-out forwards',
+        'slide-up': 'slide-up 0.6s ease-out forwards',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },

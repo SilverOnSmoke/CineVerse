@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ServerSelect } from '@/components/server-select';
@@ -43,10 +44,42 @@ export function VideoPlayer(props: VideoPlayerProps) {
   const [currentSource, setCurrentSource] = useState<string>('Poseidon');
   const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const handleNextEpisode = useCallback(() => {
+    if (props.type === 'tv' && props.show) {
+      const currentSeason = Number(searchParams.get('season')) || props.season || 1;
+      const currentEpisode = Number(searchParams.get('episode')) || props.episode || 1;
+      
+      // Get the current season's data to check total episodes
+      const seasonEpisodes = props.initialSeason?.episodes?.length || 0;
+      
+      if (currentEpisode < seasonEpisodes) {
+        // Move to next episode in current season
+        router.push(`/tv/${props.tmdbId}?season=${currentSeason}&episode=${currentEpisode + 1}`, { scroll: false });
+      } else if (currentSeason < props.show.number_of_seasons) {
+        // Move to first episode of next season
+        router.push(`/tv/${props.tmdbId}?season=${currentSeason + 1}&episode=1`, { scroll: false });
+      }
+    }
+  }, [props.type, props.show, props.tmdbId, props.season, props.episode, props.initialSeason, searchParams, router]);
+
+  // Listen for messages from the iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data === 'nextEpisode') {
+        handleNextEpisode();
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [handleNextEpisode]);
 
   if (!isMounted) {
     return <VideoPlayerLoading />;
@@ -133,6 +166,11 @@ export function VideoPlayer(props: VideoPlayerProps) {
             allowFullScreen
             onError={handleError}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            onLoad={(e) => {
+              // Add message listener to iframe
+              const iframe = e.currentTarget;
+              iframe.contentWindow?.postMessage('initPlayer', '*');
+            }}
           />
         </div>
         
