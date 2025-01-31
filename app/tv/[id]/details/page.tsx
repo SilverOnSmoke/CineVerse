@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { TVCredits } from '@/components/tv-credits';
 import type { TVShowDetails } from '@/types/tmdb';
+import { MediaRecommendations } from '@/components/media-recommendations';
 import { Button } from '@/components/ui/button';
 import { Play, Youtube, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -286,6 +287,15 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Recommendations Section */}
+      <Suspense fallback={
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }>
+        <MediaRecommendations mediaId={params.id} mediaType="tv" />
+      </Suspense>
     </div>
   );
-} 
+}

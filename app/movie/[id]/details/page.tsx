@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MovieCredits } from '@/components/movie-credits';
 import { MovieReviews } from '@/components/movie-reviews';
+import { MediaRecommendations } from '@/components/media-recommendations';
 import { formatCurrency, formatRuntime } from '@/lib/utils';
 import type { MovieDetails } from '@/types/tmdb';
 import { Card, CardContent } from '@/components/ui/card';
@@ -278,6 +279,15 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Recommendations Section */}
+      <Suspense fallback={
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }>
+        <MediaRecommendations mediaId={params.id} mediaType="movie" />
+      </Suspense>
     </div>
   );
-} 
+}
