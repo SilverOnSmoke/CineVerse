@@ -2,6 +2,11 @@ import { Suspense } from 'react';
 import { MovieGrid } from '@/components/movie-grid';
 import { fetchTMDBApi } from '@/lib/tmdb';
 import type { TVShow } from '@/types/tmdb';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "TV Shows | CineVerse",
+};
 import { PaginationControl } from '@/components/pagination';
 import { Loader2 } from 'lucide-react';
 
@@ -64,4 +69,4 @@ async function TVShowList({ searchParams }: { searchParams: { page?: string } })
       </div>
     </div>
   );
-} 
+}

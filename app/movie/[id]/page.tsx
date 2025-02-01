@@ -1,7 +1,15 @@
 import { notFound } from 'next/navigation';
 import { fetchTMDBApi } from '@/lib/tmdb';
 import type { MovieDetails } from '@/types/tmdb';
+import type { Metadata } from 'next';
 import { VideoPlayer } from '@/components/video-player';
+
+export async function generateMetadata({ params }: MoviePageProps): Promise<Metadata> {
+  const movie = await fetchTMDBApi<MovieDetails>(`/movie/${params.id}`);
+  return {
+    title: `${movie.title} | CineVerse`
+  };
+}
 
 interface MoviePageProps {
   params: { id: string };

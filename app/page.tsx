@@ -2,6 +2,11 @@ import { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Play, Info, Loader2 } from 'lucide-react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Home | CineVerse",
+};
 
 import { Button } from '@/components/ui/button';
 import { 

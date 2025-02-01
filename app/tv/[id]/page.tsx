@@ -2,6 +2,14 @@ import { VideoPlayer } from '@/components/video-player';
 import { notFound } from 'next/navigation';
 import { fetchTMDBApi } from '@/lib/tmdb';
 import type { TVShowDetails, TVShowSeason } from '@/types/tmdb';
+import type { Metadata } from 'next';
+
+export async function generateMetadata({ params }: TVShowPageProps): Promise<Metadata> {
+  const show = await fetchTMDBApi<TVShowDetails>(`/tv/${params.id}`);
+  return {
+    title: `${show.name} | CineVerse`
+  };
+}
 
 interface TVShowPageProps {
   params: { 
@@ -36,4 +44,4 @@ export default async function TVShowPage({ params, searchParams }: TVShowPagePro
       initialSeason={initialSeason}
     />
   );
-} 
+}
