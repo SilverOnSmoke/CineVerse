@@ -50,9 +50,9 @@ export function Navbar() {
             : "bg-background/50"
         )}
       >
-        <div className="container flex h-16 items-center">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           {/* Mobile Logo - Centered */}
-          <div className="w-full flex justify-center md:hidden">
+          <div className="flex md:hidden flex-1 justify-center">
             <Link href="/" className="group">
               <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent group-hover:to-primary transition-all duration-300">
                 CINEVERSE
@@ -61,11 +61,11 @@ export function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex w-full items-center">
+          <div className="hidden md:flex flex-1 items-center justify-between">
             {/* Desktop Logo */}
             <Link 
               href="/" 
-              className="flex items-center space-x-2 pl-12 group flex-none"
+              className="flex items-center space-x-2 group"
             >
               <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent group-hover:to-primary transition-all duration-300">
                 CINEVERSE
@@ -73,7 +73,7 @@ export function Navbar() {
             </Link>
 
             {/* Desktop Nav Items */}
-            <nav className="flex items-center justify-center space-x-1 flex-1">
+            <nav className="flex items-center justify-center space-x-4">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
@@ -100,9 +100,12 @@ export function Navbar() {
             </nav>
 
             {/* Desktop Search */}
-            <div className="flex items-center space-x-4 pr-6 md:pr-8 lg:pr-12">
-              <Link href="/search" className="flex items-center px-4 py-2 rounded-lg border border-muted transition-all duration-200 hover:bg-primary/5 hover:border-primary text-sm font-bold text-muted-foreground hover:text-primary">
-                <Search className="h-4 w-4 transition-colors text-muted-foreground group-hover:text-primary mr-2" />
+            <div className="flex items-center">
+              <Link 
+                href="/search" 
+                className="flex items-center px-4 py-2 rounded-lg border border-muted transition-all duration-200 hover:bg-primary/5 hover:border-primary text-sm font-bold text-muted-foreground hover:text-primary"
+              >
+                <Search className="h-4 w-4 transition-colors text-muted-foreground mr-2" />
                 Search
               </Link>
             </div>
