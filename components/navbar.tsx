@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Film, Search, TrendingUp, Tv } from 'lucide-react';
+import { Film, Search, TrendingUp, Tv, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import Dock from './ui/dock';
@@ -20,11 +20,17 @@ const navItems = [
     icon: Tv,
     hoverAnimation: 'animate-tv-static' 
   },
-  { 
-    href: '/trending', 
-    label: 'Trending', 
+  {
+    href: '/trending',
+    label: 'Trending',
     icon: TrendingUp,
-    hoverAnimation: 'animate-trend-up' 
+    hoverAnimation: 'animate-trend-up'
+  },
+  {
+    href: '/watchlist',
+    label: 'Watchlist',
+    icon: Bookmark,
+    hoverAnimation: 'animate-bookmark'
   },
 ];
 
@@ -50,14 +56,36 @@ export function Navbar() {
             : "bg-background/50"
         )}
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          {/* Mobile Logo - Centered */}
-          <div className="flex md:hidden flex-1 justify-center">
+        <div className="container mx-auto px-2 sm:px-4 lg:px-6 flex items-center justify-between h-16">
+          {/* Mobile Navigation */}
+          <div className="flex md:hidden flex-1 items-center justify-between px-2">
+            {/* Watchlist Icon */}
+            <Link
+              href="/watchlist"
+              className={cn(
+                "flex items-center p-2 rounded-full transition-all duration-200",
+                pathname === '/watchlist'
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+              )}
+            >
+              <Bookmark
+                className={cn(
+                  "h-5 w-5 transition-transform duration-200",
+                  pathname === '/watchlist' && "animate-bookmark"
+                )}
+              />
+            </Link>
+
+            {/* Logo */}
             <Link href="/" className="group">
               <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent group-hover:to-primary transition-all duration-300">
                 CINEVERSE
               </span>
             </Link>
+
+            {/* Empty div for spacing */}
+            <div className="w-9" />
           </div>
 
           {/* Desktop Navigation */}
@@ -73,15 +101,15 @@ export function Navbar() {
             </Link>
 
             {/* Desktop Nav Items */}
-            <nav className="flex items-center justify-center space-x-4">
+            <nav className="flex items-center justify-center space-x-2 lg:space-x-4">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center text-sm font-medium transition-all duration-200 group relative px-4 py-2 rounded-full",
-                    pathname === item.href 
-                      ? "text-primary bg-primary/10" 
+                    "flex items-center text-sm font-medium transition-all duration-200 group relative px-2 lg:px-4 py-2 rounded-full whitespace-nowrap",
+                    pathname === item.href
+                      ? "text-primary bg-primary/10"
                       : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                   )}
                 >
@@ -103,7 +131,7 @@ export function Navbar() {
             <div className="flex items-center">
               <Link 
                 href="/search" 
-                className="flex items-center px-4 py-2 rounded-lg border border-muted transition-all duration-200 hover:bg-primary/5 hover:border-primary text-sm font-bold text-muted-foreground hover:text-primary"
+                className="flex items-center px-2 sm:px-3 lg:px-4 py-2 rounded-lg border border-muted transition-all duration-200 hover:bg-primary/5 hover:border-primary text-sm font-bold text-muted-foreground hover:text-primary whitespace-nowrap"
               >
                 <Search className="h-4 w-4 transition-colors text-muted-foreground mr-2" />
                 Search

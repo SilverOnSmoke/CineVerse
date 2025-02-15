@@ -9,10 +9,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { TVCredits } from '@/components/tv-credits';
 import type { TVShowDetails } from '@/types/tmdb';
 import { MediaRecommendations } from '@/components/media-recommendations';
-import { Button } from '@/components/ui/button';
-import { Play, Youtube, Loader2 } from 'lucide-react';
-import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { TVActions } from './page.client';
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
@@ -98,8 +97,8 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
         </div>
 
         {/* Content Container */}
-        <div className="container relative z-10">
-          <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
+        <div className="container relative z-10 px-4 sm:px-6">
+          <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
             {/* Logo Section */}
             {tvLogos.length > 0 && (
               <div className="w-full max-w-[300px] sm:max-w-[400px] mb-8 sm:mb-10 px-4 sm:px-0">
@@ -127,31 +126,18 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
                 {new Date(show.first_air_date).getFullYear()} • {show.episode_run_time?.[0]} min
               </p>
 
-              {/* Buttons and Rating Section */}
+              {/* Actions and Rating Section */}
               <div className="flex flex-col items-center gap-6">
-                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
-                  <Button size="lg" className="w-full sm:w-auto min-w-[160px]" asChild>
-                    <Link href={`/tv/${params.id}?season=1&episode=1`}>
-                      <Play className="h-5 w-5 mr-2" />
-                      Watch Now
-                    </Link>
-                  </Button>
-                  
-                  {trailer && (
-                    <Button size="lg" variant="outline" className="w-full sm:w-auto min-w-[160px]" asChild>
-                      <Link
-                        href={`https://www.youtube.com/watch?v=${trailer.key}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Youtube className="h-5 w-5 mr-2" />
-                        Watch Trailer
-                      </Link>
-                    </Button>
-                  )}
-                </div>
+                <TVActions
+                  show={{
+                    id: show.id,
+                    name: show.name,
+                    poster_path: show.poster_path,
+                  }}
+                  trailerId={trailer?.key}
+                />
                 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mt-4">
                   <div className="bg-primary/10 px-3 py-1.5 rounded-md">
                     <p className="text-xl font-semibold">
                       {(show.vote_average * 10).toFixed(0)}%

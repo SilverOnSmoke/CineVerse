@@ -1,9 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { getTMDBImageUrl } from '@/lib/tmdb';
 import { Button } from '@/components/ui/button';
 import { Play, Info } from 'lucide-react';
 import type { Movie, TVShow } from '@/types/tmdb';
+import { BookmarkIcon } from './bookmark-icon';
 
 const shimmer = (w: number, h: number) => `
 <svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -37,6 +40,7 @@ export function MovieGrid({ items }: MovieGridProps) {
       {items.map((item) => (
         <div key={item.id} className="relative group">
           <div className="aspect-[2/3] relative rounded-lg overflow-hidden">
+            <BookmarkIcon item={item} />
             <Image
               src={getTMDBImageUrl(item.poster_path, 'w500')}
               alt={item.media_type === 'movie' ? item.title : item.name}
@@ -44,9 +48,9 @@ export function MovieGrid({ items }: MovieGridProps) {
               className="object-cover"
             />
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <div className="flex flex-col sm:flex-row gap-2 p-2">
-                <Button size="sm" asChild>
-                  <Link 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-4 sm:p-3 w-full max-w-[85%] mx-auto">
+                <Button size="sm" className="w-full sm:w-auto" asChild>
+                  <Link
                     href={`/${item.media_type}/${item.id}${
                       item.media_type === 'tv' ? '?season=1&episode=1' : ''
                     }`}
@@ -55,7 +59,7 @@ export function MovieGrid({ items }: MovieGridProps) {
                     Watch
                   </Link>
                 </Button>
-                <Button size="sm" variant="secondary" asChild>
+                <Button size="sm" variant="secondary" className="w-full sm:w-auto" asChild>
                   <Link href={`/${item.media_type}/${item.id}/details`}>
                     <Info className="h-4 w-4 mr-2" />
                     Details

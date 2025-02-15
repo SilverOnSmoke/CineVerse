@@ -61,7 +61,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <Footer />
             <FooterModal />
           </div>
-          <Toaster />
+          <Toaster theme="dark" richColors />
           <Analytics />
         </ThemeProvider>
       </body>

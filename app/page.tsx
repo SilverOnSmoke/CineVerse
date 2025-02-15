@@ -9,17 +9,18 @@ export const metadata: Metadata = {
 };
 
 import { Button } from '@/components/ui/button';
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselPrevious, 
-  CarouselNext 
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext
 } from '@/components/ui/carousel';
 import { MovieCarousel } from '@/components/movie-carousel';
 import { fetchTMDBApi } from '@/lib/tmdb';
 import { getTMDBImageUrl } from '@/lib/tmdb';
 import type { MovieResponse, MovieDetails } from '@/types/tmdb';
+import { BookmarkIcon } from '@/components/bookmark-icon';
 
 function LoadingFallback() {
   return (
@@ -61,6 +62,7 @@ async function MovieSection({ type }: { type: string }) {
                     fill
                     className="object-cover"
                   />
+                  <BookmarkIcon item={movie} />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <div className="flex flex-col sm:flex-row gap-2 p-2">
                       <Button size="sm" asChild>

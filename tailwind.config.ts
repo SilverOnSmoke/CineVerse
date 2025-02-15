@@ -8,6 +8,14 @@ const config: Config = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    screens: {
+      'xs': '375px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+    },
     extend: {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -98,12 +106,21 @@ const config: Config = {
             height: '0',
           },
         },
+        'bookmark-bounce': {
+          '0%, 100%': {
+            transform: 'scale(1) rotate(0deg)',
+          },
+          '50%': {
+            transform: 'scale(1.2) rotate(10deg)',
+          },
+        },
       },
       animation: {
         'fade-in': 'fade-in 0.8s ease-out forwards',
         'slide-up': 'slide-up 0.6s ease-out forwards',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'bookmark': 'bookmark-bounce 0.5s ease-in-out',
       },
     },
   },

@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ServerSelect } from '@/components/server-select';
-import { SourceSelect } from '@/components/source-select';
 import { EpisodeGrid } from '@/components/episode-grid';
 import type { TVShowDetails, TVShowSeason } from '@/types/tmdb';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -21,7 +20,7 @@ interface VideoPlayerProps {
 }
 
 const PROVIDERS = {
-  CINEVERSE: 'CineVerse (Main)',
+  VIDEASY: 'Videasy (Main)',
   EMBED_SU: 'Server 1 (Embed SU)',
   VIDLINK: 'Server 2 (VidLink)',
   AUTOEMBED: 'Server 3 (AutoEmbed)',
@@ -40,8 +39,7 @@ function VideoPlayerLoading() {
 
 export function VideoPlayer(props: VideoPlayerProps) {
   const [isMounted, setIsMounted] = useState(false);
-  const [currentProvider, setCurrentProvider] = useState<keyof typeof PROVIDERS>('CINEVERSE');
-  const [currentSource, setCurrentSource] = useState<string>('Poseidon');
+  const [currentProvider, setCurrentProvider] = useState<keyof typeof PROVIDERS>('VIDEASY');
   const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -87,14 +85,10 @@ export function VideoPlayer(props: VideoPlayerProps) {
 
   const getVideoUrl = () => {
     switch (currentProvider) {
-      case 'CINEVERSE':
-        const baseUrl = props.type === 'movie'
-          ? `https://streamnest-htje.onrender.com/embed/movie/${props.tmdbId}`
-          : `https://streamnest-htje.onrender.com/embed/tv/${props.tmdbId}/${props.season}/${props.episode}${props.type === 'tv' ? '?nextbutton=true' : ''}`;
-        
-        // Add provider parameter if it's not already in the URL
-        const separator = baseUrl.includes('?') ? '&' : '?';
-        return `${baseUrl}${separator}provider=${currentSource}`;
+      case 'VIDEASY':
+        return props.type === 'movie'
+          ? `https://player.videasy.net/movie/${props.tmdbId}`
+          : `https://player.videasy.net/tv/${props.tmdbId}/${props.season}/${props.episode}`;
       
       case 'EMBED_SU':
         return props.type === 'movie'
@@ -122,7 +116,7 @@ export function VideoPlayer(props: VideoPlayerProps) {
   };
 
   const handleError = () => {
-    const providers: Array<keyof typeof PROVIDERS> = ['CINEVERSE', 'EMBED_SU', 'VIDLINK', 'AUTOEMBED', 'VIDSRC'];
+    const providers: Array<keyof typeof PROVIDERS> = ['VIDEASY', 'EMBED_SU', 'VIDLINK', 'AUTOEMBED', 'VIDSRC'];
     const currentIndex = providers.indexOf(currentProvider);
     const nextProvider = providers[currentIndex + 1];
 
@@ -159,10 +153,11 @@ export function VideoPlayer(props: VideoPlayerProps) {
   return (
     <div className="min-h-screen bg-black flex flex-col pt-16 pb-16">
       <div className="relative w-full max-w-[1200px] mx-auto">
-        <div className="relative w-full aspect-video">
+        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
           <iframe
             src={getVideoUrl()}
-            className="w-full h-full border-0"
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            frameBorder="0"
             allowFullScreen
             onError={handleError}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -174,17 +169,11 @@ export function VideoPlayer(props: VideoPlayerProps) {
           />
         </div>
         
-        <div className="mt-4 px-4 flex items-center gap-4 flex-wrap">
+        <div className="mt-4 px-4">
           <ServerSelect
             currentServer={currentProvider}
             onServerChange={setCurrentProvider}
           />
-          {currentProvider === 'CINEVERSE' && (
-            <SourceSelect
-              currentSource={currentSource}
-              onSourceChange={setCurrentSource}
-            />
-          )}
         </div>
       </div>
 

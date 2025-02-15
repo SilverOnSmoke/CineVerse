@@ -7,7 +7,8 @@ import {
   Search,
   Film,
   Tv,
-  TrendingUp
+  TrendingUp,
+  Bookmark
 } from 'lucide-react';
 
 const iconComponents = [
@@ -22,9 +23,9 @@ const Dock = () => {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center p-2 bg-background/80 backdrop-blur-lg border-t md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-lg border-t safe-bottom md:hidden">
       <motion.div
-        className="flex items-center gap-6 p-2 rounded-2xl"
+        className="flex items-center justify-evenly xs:justify-between w-full max-w-screen-sm px-1 xs:px-4 py-1"
       >
         {iconComponents.map(({ icon: Icon, label, href }) => (
           <IconButton 
@@ -55,14 +56,17 @@ const IconButton = ({
     <motion.div
       whileHover={{ scale: 1.1, y: -2 }}
       whileTap={{ scale: 0.95 }}
-      className={`relative group p-3 rounded-lg transition-colors ${
+      className={`relative group p-2 rounded-lg transition-colors touch-manipulation ${
         isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'
       }`}
+      style={{
+        paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0.5rem))'
+      }}
     >
-      <Icon className="w-5 h-5" />
-      <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 
-        bg-popover text-popover-foreground text-xs rounded opacity-0 group-hover:opacity-100 
-        transition-opacity whitespace-nowrap pointer-events-none border">
+      <Icon className="w-[18px] h-[18px] xs:w-5 xs:h-5" />
+      <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5
+        bg-popover text-popover-foreground text-[10px] rounded opacity-0 group-hover:opacity-100
+        transition-opacity whitespace-nowrap pointer-events-none border shadow-sm">
         {label}
       </span>
     </motion.div>
