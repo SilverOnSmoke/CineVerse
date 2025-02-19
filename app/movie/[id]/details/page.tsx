@@ -14,6 +14,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { MovieActions } from './page.client';
+import { MovieVideos } from '@/components/movie-videos';
+import { MovieBehindScenes } from '@/components/movie-behind-scenes';
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
@@ -190,6 +192,8 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="cast">Cast</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="trailers">Trailers</TabsTrigger>
+            <TabsTrigger value="behind-scenes">Behind the Scenes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -259,6 +263,30 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
                 </div>
               }>
                 <MovieReviews movieId={params.id} />
+              </Suspense>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="trailers" className="space-y-6">
+            <div className="max-w-6xl mx-auto pb-8">
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }>
+                <MovieVideos movieId={params.id} />
+              </Suspense>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="behind-scenes" className="space-y-6">
+            <div className="max-w-6xl mx-auto pb-8">
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }>
+                <MovieBehindScenes movieId={params.id} />
               </Suspense>
             </div>
           </TabsContent>

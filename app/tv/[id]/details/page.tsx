@@ -12,6 +12,8 @@ import { MediaRecommendations } from '@/components/media-recommendations';
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { TVActions } from './page.client';
+import { TVVideos } from '@/components/tv-videos';
+import { TVBehindScenes } from '@/components/tv-behind-scenes';
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
@@ -177,11 +179,13 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
       {/* Rest of the content */}
       <div className="container">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-[56px] z-30 w-full border-b px-4 flex justify-center">
+          <TabsList className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-[56px] z-30 w-full border-b px-4 flex justify-start md:justify-center overflow-x-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="cast">Cast</TabsTrigger>
             <TabsTrigger value="episodes">Episodes</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="trailers">Trailers</TabsTrigger>
+            <TabsTrigger value="behind-scenes">Behind the Scenes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -268,6 +272,29 @@ export default async function TVShowDetailsPage({ params }: TVShowDetailsPagePro
                 </div>
               }>
                 <p className="text-center text-muted-foreground">No reviews yet.</p>
+              </Suspense>
+            </div>
+          </TabsContent>
+          <TabsContent value="trailers" className="space-y-6">
+            <div className="max-w-6xl mx-auto pb-8">
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }>
+                <TVVideos tvId={params.id} />
+              </Suspense>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="behind-scenes" className="space-y-6">
+            <div className="max-w-6xl mx-auto pb-8">
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }>
+                <TVBehindScenes tvId={params.id} />
               </Suspense>
             </div>
           </TabsContent>

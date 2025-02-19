@@ -46,6 +46,7 @@ export interface Genre {
 }
 
 export interface MovieDetails extends Movie {
+  credits: any;
   genres: Genre[];
   runtime: number;
   status: string;

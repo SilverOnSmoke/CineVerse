@@ -36,10 +36,10 @@ interface MovieGridProps {
 
 export function MovieGrid({ items }: MovieGridProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 sm:p-6 md:p-8 lg:p-10 pb-16">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 p-3 sm:p-6 md:p-8 lg:p-10 pb-16">
       {items.map((item) => (
         <div key={item.id} className="relative group">
-          <div className="aspect-[2/3] relative rounded-lg overflow-hidden">
+          <div className="aspect-[2/3] relative rounded-lg overflow-hidden shadow-lg">
             <BookmarkIcon item={item} />
             <Image
               src={getTMDBImageUrl(item.poster_path, 'w500')}
@@ -48,18 +48,16 @@ export function MovieGrid({ items }: MovieGridProps) {
               className="object-cover"
             />
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-4 sm:p-3 w-full max-w-[85%] mx-auto">
-                <Button size="sm" className="w-full sm:w-auto" asChild>
+              <div className="flex flex-col gap-2 p-2 w-full max-w-[90%] mx-auto">
+                <Button size="sm" className="w-full" asChild>
                   <Link
-                    href={`/${item.media_type}/${item.id}${
-                      item.media_type === 'tv' ? '?season=1&episode=1' : ''
-                    }`}
+                    href={`/${item.media_type}/${item.id}${item.media_type === 'tv' ? '?season=1&episode=1' : ''}`}
                   >
                     <Play className="h-4 w-4 mr-2" />
                     Watch
                   </Link>
                 </Button>
-                <Button size="sm" variant="secondary" className="w-full sm:w-auto" asChild>
+                <Button size="sm" variant="secondary" className="w-full" asChild>
                   <Link href={`/${item.media_type}/${item.id}/details`}>
                     <Info className="h-4 w-4 mr-2" />
                     Details
@@ -68,7 +66,7 @@ export function MovieGrid({ items }: MovieGridProps) {
               </div>
             </div>
           </div>
-          <h3 className="mt-3 px-2 text-base md:text-lg font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 md:line-clamp-1 hover:text-primary transition-colors">
+          <h3 className="mt-2 px-1 text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 hover:text-primary transition-colors">
             {item.media_type === 'movie' ? item.title : item.name}
           </h3>
         </div>
