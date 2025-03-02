@@ -77,7 +77,7 @@ function WatchlistContent() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 md:px-8 lg:px-12 xl:px-16 py-8">
       <h1 className="text-3xl font-bold mb-8">My Watchlist</h1>
       
       {/* Show loading skeleton while fetching details */}
