@@ -231,7 +231,7 @@ export default function SearchPage() {
       window.removeEventListener(adultVerifiedChangeEvent, handleAdultVerifiedChange);
       window.removeEventListener(resetFiltersEvent, resetFilters);
     };
-  }, []);
+  }, [resetFilters]); // Add resetFilters as a dependency
 
   return (
     <div className="min-h-screen pt-4 md:pt-8 pb-20 md:pb-16">

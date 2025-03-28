@@ -11,6 +11,22 @@ const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const shouldLog = process.env.NEXT_PUBLIC_ENABLE_API_LOGS === 'true' && process.env.NODE_ENV === 'development';
 
+// List of endpoints that commonly return 404s and can be silently ignored
+const silentFailureEndpoints = [
+  '/collection/',  // Collection details often 404 for certain IDs
+];
+
+// Check if an endpoint should have silent failures
+const shouldSilenceErrors = (endpoint: string, status: number): boolean => {
+  // Only silence 404 errors
+  if (status !== 404) return false;
+  
+  // Check if the endpoint is in our silent list
+  return silentFailureEndpoints.some(silentEndpoint => 
+    endpoint.startsWith(silentEndpoint)
+  );
+};
+
 export async function fetchTMDBApi<T>(
   endpoint: string,
   params: Record<string, string> = {},
@@ -51,21 +67,29 @@ export async function fetchTMDBApi<T>(
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`API Error: Status ${response.status}`, errorText);
+        
+        // Don't log 404 errors for certain endpoints
+        if (!shouldSilenceErrors(endpoint, response.status)) {
+          console.error(`API Error: Status ${response.status}`, errorText);
+        }
+        
         throw new Error(`Failed to fetch data from TMDB: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
       return data;
     } catch (error) {
-      if (shouldLog) {
+      if (shouldLog && error instanceof Error && !error.message.includes('404') && 
+          !silentFailureEndpoints.some(path => endpoint.startsWith(path))) {
         console.error(`Attempt ${i + 1} failed:`, error);
       }
+      
       lastError = error as Error;
       
       if (i < retries - 1) {
         const waitTime = Math.pow(2, i) * 1000;
-        if (shouldLog) {
+        if (shouldLog && !(error instanceof Error && error.message.includes('404') && 
+            silentFailureEndpoints.some(path => endpoint.startsWith(path)))) {
           console.log(`Waiting ${waitTime}ms before retry...`);
         }
         await wait(waitTime);

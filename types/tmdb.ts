@@ -105,3 +105,19 @@ export interface TVShowSeason {
   season_number: number;
   episodes: TVShowEpisode[];
 }
+
+export interface Collection {
+  id: number;
+  name: string;
+  overview: string;
+  poster_path: string;
+  backdrop_path: string;
+  parts: Movie[];
+}
+
+export interface CollectionSearchResponse {
+  page: number;
+  results: Collection[];
+  total_pages: number;
+  total_results: number;
+}
