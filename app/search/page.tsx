@@ -8,19 +8,19 @@ import { MovieGrid } from '@/components/movie-grid';
 import { fetchTMDBApi } from '@/lib/tmdb';
 import type { SearchResult, Genre, TVShow, Movie } from '@/types/tmdb';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Search, Loader2, X } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { FilterModal } from '@/components/filter-modal';
 
-const currentYear = new Date().getFullYear();
-const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
+// Ratings options reference for display purposes
+const ratingOptions = [
+  { value: '9', label: '9+ ★★★★★' },
+  { value: '8', label: '8+ ★★★★☆' },
+  { value: '7', label: '7+ ★★★☆☆' },
+  { value: '6', label: '6+ ★★☆☆☆' },
+  { value: '5', label: '5+ ★☆☆☆☆' },
+  { value: '0', label: 'All Ratings' },
+];
 
 export default function SearchPage() {
   const router = useRouter();
@@ -28,6 +28,9 @@ export default function SearchPage() {
   const [search, setSearch] = useState(searchParams.get('q') || '');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
+  const [selectedRating, setSelectedRating] = useState('0'); // Default to 'All Ratings'
+  const [includeAdult, setIncludeAdult] = useState(false);
+  const [isAdultVerified, setIsAdultVerified] = useState(false);
   const [genres, setGenres] = useState<Genre[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<SearchResult | null>(null);
@@ -58,7 +61,7 @@ export default function SearchPage() {
   useEffect(() => {
     const fetchResults = async () => {
       // Only proceed if we have either a search query or active filters
-      if (!debouncedSearch && !selectedGenre && !selectedYear) {
+      if (!debouncedSearch && !selectedGenre && !selectedYear && selectedRating === '0' && !includeAdult) {
         setResults(null);
         router.push('/search', { scroll: false });
         return;
@@ -71,14 +74,17 @@ export default function SearchPage() {
         if (debouncedSearch) params.append('q', debouncedSearch);
         if (selectedGenre) params.append('genre', selectedGenre);
         if (selectedYear) params.append('year', selectedYear);
+        if (selectedRating !== '0') params.append('rating', selectedRating);
+        if (includeAdult) params.append('adult', 'true');
         router.push(`/search?${params.toString()}`, { scroll: false });
 
         let movieResults: SearchResult;
         let tvResults: SearchResult;
 
         const commonParams = {
-          include_adult: 'false',
-          ...(selectedGenre && { with_genres: selectedGenre })
+          include_adult: includeAdult ? 'true' : 'false',
+          ...(selectedGenre && { with_genres: selectedGenre }),
+          ...(selectedRating !== '0' && { 'vote_average.gte': selectedRating })
         };
 
         if (debouncedSearch) {
@@ -86,12 +92,14 @@ export default function SearchPage() {
           movieResults = await fetchTMDBApi<SearchResult>('/search/movie', {
             ...commonParams,
             query: debouncedSearch,
+            include_adult: includeAdult ? 'true' : 'false', // Explicitly set for this endpoint
             ...(selectedYear && { year: selectedYear })
           });
 
           tvResults = await fetchTMDBApi<SearchResult>('/search/tv', {
             ...commonParams,
             query: debouncedSearch,
+            include_adult: includeAdult ? 'true' : 'false', // Explicitly set for this endpoint
             ...(selectedYear && { first_air_date_year: selectedYear })
           });
         } else {
@@ -99,12 +107,14 @@ export default function SearchPage() {
           movieResults = await fetchTMDBApi<SearchResult>('/discover/movie', {
             ...commonParams,
             sort_by: 'popularity.desc',
+            include_adult: includeAdult ? 'true' : 'false', // Explicitly set for this endpoint
             ...(selectedYear && { primary_release_year: selectedYear })
           });
 
           tvResults = await fetchTMDBApi<SearchResult>('/discover/tv', {
             ...commonParams,
             sort_by: 'popularity.desc',
+            include_adult: includeAdult ? 'true' : 'false', // Explicitly set for this endpoint
             ...(selectedYear && { first_air_date_year: selectedYear })
           });
         }
@@ -149,24 +159,105 @@ export default function SearchPage() {
     };
 
     fetchResults();
-  }, [debouncedSearch, selectedGenre, selectedYear, router]);
+  }, [debouncedSearch, selectedGenre, selectedYear, selectedRating, includeAdult, router]);
 
   const filteredResults = results?.results || [];
 
+  const hasActiveFilters = selectedGenre || selectedYear || selectedRating !== '0' || includeAdult;
+
+  // Reset all filters
   const resetFilters = () => {
-    setSelectedGenre('');
-    setSelectedYear('');
+    setSelectedGenre('all');
+    setSelectedYear('all');
+    setSelectedRating('0');
+    setIncludeAdult(false);
     router.push(`/search?q=${encodeURIComponent(search)}`, { scroll: false });
   };
 
-  const hasActiveFilters = selectedGenre || selectedYear;
+  // Define event names for the FilterModal
+  const genreChangeEvent = 'search-page-genre-change';
+  const yearChangeEvent = 'search-page-year-change';
+  const ratingChangeEvent = 'search-page-rating-change';
+  const adultChangeEvent = 'search-page-adult-change';
+  const adultVerifiedChangeEvent = 'search-page-adult-verified-change';
+  const resetFiltersEvent = 'search-page-reset-filters';
+
+  // Set up event listeners for the FilterModal
+  useEffect(() => {
+    // Handler for genre change events
+    const handleGenreChange = (e: Event) => {
+      const value = (e as CustomEvent).detail;
+      setSelectedGenre(value === 'all' ? '' : value);
+    };
+
+    // Handler for year change events
+    const handleYearChange = (e: Event) => {
+      const value = (e as CustomEvent).detail;
+      setSelectedYear(value === 'all' ? '' : value);
+    };
+
+    // Handler for rating change events
+    const handleRatingChange = (e: Event) => {
+      const value = (e as CustomEvent).detail;
+      setSelectedRating(value);
+    };
+
+    // Handler for adult content change events
+    const handleAdultChange = (e: Event) => {
+      const value = (e as CustomEvent).detail;
+      setIncludeAdult(value);
+    };
+
+    // Handler for adult verification events
+    const handleAdultVerifiedChange = (e: Event) => {
+      const value = (e as CustomEvent).detail;
+      setIsAdultVerified(value);
+    };
+
+    // Add event listeners
+    window.addEventListener(genreChangeEvent, handleGenreChange);
+    window.addEventListener(yearChangeEvent, handleYearChange);
+    window.addEventListener(ratingChangeEvent, handleRatingChange);
+    window.addEventListener(adultChangeEvent, handleAdultChange);
+    window.addEventListener(adultVerifiedChangeEvent, handleAdultVerifiedChange);
+    window.addEventListener(resetFiltersEvent, resetFilters);
+
+    // Clean up event listeners
+    return () => {
+      window.removeEventListener(genreChangeEvent, handleGenreChange);
+      window.removeEventListener(yearChangeEvent, handleYearChange);
+      window.removeEventListener(ratingChangeEvent, handleRatingChange);
+      window.removeEventListener(adultChangeEvent, handleAdultChange);
+      window.removeEventListener(adultVerifiedChangeEvent, handleAdultVerifiedChange);
+      window.removeEventListener(resetFiltersEvent, resetFilters);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen pt-4 md:pt-8 pb-20 md:pb-16">
       <div className="container max-w-6xl mx-auto px-3 sm:px-4">
         {/* Search Header */}
         <div className="space-y-4 md:space-y-6 mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold">Search</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl md:text-3xl font-bold">Search</h1>
+            
+            {/* Filter Modal Button */}
+            <FilterModal 
+              genres={genres}
+              selectedGenre={selectedGenre || 'all'}
+              onGenreChange={genreChangeEvent}
+              selectedYear={selectedYear || 'all'}
+              onYearChange={yearChangeEvent}
+              selectedRating={selectedRating}
+              onRatingChange={ratingChangeEvent}
+              includeAdult={includeAdult}
+              onAdultChange={adultChangeEvent}
+              isAdultVerified={isAdultVerified}
+              onAdultVerifiedChange={adultVerifiedChangeEvent}
+              onResetFilters={resetFiltersEvent}
+            />
+          </div>
+          
           <div className="relative">
             <Input
               type="text"
@@ -176,47 +267,6 @@ export default function SearchPage() {
               className="w-full h-12 pl-12 pr-4 text-base md:text-lg bg-background/50 backdrop-blur-sm border-2 focus:border-primary/50 rounded-xl"
             />
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          </div>
-          
-          {/* Filters */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex gap-3 items-start lg:items-center">
-            <Select value={selectedGenre} onValueChange={setSelectedGenre}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Select Genre" />
-              </SelectTrigger>
-              <SelectContent className="max-h-[300px]">
-                {genres.map((genre) => (
-                  <SelectItem key={genre.id} value={genre.id.toString()}>
-                    {genre.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedYear} onValueChange={setSelectedYear}>
-              <SelectTrigger className="w-full sm:w-[140px]">
-                <SelectValue placeholder="Select Year" />
-              </SelectTrigger>
-              <SelectContent className="max-h-[300px]">
-                {years.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetFilters}
-                className="w-full sm:w-auto flex items-center justify-center gap-2"
-              >
-                <X className="h-4 w-4" />
-                Reset Filters
-              </Button>
-            )}
           </div>
         </div>
 
@@ -245,6 +295,16 @@ export default function SearchPage() {
                           {selectedYear}
                         </span>
                       )}
+                      {selectedRating !== '0' && (
+                        <span className="inline-flex items-center bg-muted/50 rounded-full px-2.5 py-0.5">
+                          {ratingOptions.find(r => r.value === selectedRating)?.label}
+                        </span>
+                      )}
+                      {includeAdult && (
+                        <span className="inline-flex items-center bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full px-2.5 py-0.5">
+                          Adult Content
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -268,6 +328,8 @@ export default function SearchPage() {
                   {search && <span className="font-medium"> for "{search}"</span>}
                   {selectedGenre && <span> in {genres.find(g => g.id.toString() === selectedGenre)?.name}</span>}
                   {selectedYear && <span> from {selectedYear}</span>}
+                  {selectedRating !== '0' && <span> with rating {selectedRating}+</span>}
+                  {includeAdult && <span> including adult content</span>}
                 </p>
               </div>
             </div>
