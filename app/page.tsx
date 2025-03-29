@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, Info, Loader2 } from 'lucide-react';
+import { Play, Info, Loader2, FilmIcon, ChevronRight } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -134,6 +134,50 @@ export default async function Home() {
             <MovieSection type="/movie/top_rated" />
           </section>
         </Suspense>
+        
+        {/* Collections Card */}
+        <section className="py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="relative overflow-hidden rounded-xl shadow-lg border border-primary/20 bg-gradient-to-r from-background to-primary/5 backdrop-blur-sm hover:shadow-primary/20 transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 opacity-30"></div>
+              <div className="relative z-10 px-6 py-8 md:px-10 md:py-12 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex-1 space-y-4 text-center md:text-left">
+                  <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Discover Film Collections</h2>
+                  <p className="text-muted-foreground max-w-md">
+                    Explore complete film franchises and series. From epic sagas to beloved trilogies, view comprehensive collections with timelines, stats, and more.
+                  </p>
+                  <Button size="lg" className="group" asChild>
+                    <Link href="/collections">
+                      Explore Collections
+                      <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </Button>
+                </div>
+                <div className="flex-shrink-0 w-32 md:w-40 h-32 md:h-40 relative rounded-lg overflow-hidden shadow-md">
+                  <div className="relative w-full h-full transform transition duration-300 hover:scale-105">
+                    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-1">
+                      <div className="relative rounded overflow-hidden">
+                        <div className="absolute inset-0 bg-primary/20"></div>
+                      </div>
+                      <div className="relative rounded overflow-hidden">
+                        <div className="absolute inset-0 bg-primary/30"></div>
+                      </div>
+                      <div className="relative rounded overflow-hidden">
+                        <div className="absolute inset-0 bg-primary/40"></div>
+                      </div>
+                      <div className="relative rounded overflow-hidden">
+                        <div className="absolute inset-0 bg-primary/50"></div>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <FilmIcon className="h-12 w-12 text-primary/90" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </Suspense>
   );

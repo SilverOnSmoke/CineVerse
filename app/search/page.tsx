@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MovieGrid } from '@/components/movie-grid';
 import { fetchTMDBApi } from '@/lib/tmdb';
@@ -131,6 +131,7 @@ export default function SearchPage() {
               vote_average: item.vote_average,
               release_date: (item as any).release_date || '',
               genre_ids: item.genre_ids,
+              popularity: (item as any).popularity || 0,
               media_type: 'movie' as const
             }) satisfies Movie),
             ...tvResults.results.map(item => ({
@@ -143,6 +144,7 @@ export default function SearchPage() {
               first_air_date: (item as any).first_air_date || '',
               genre_ids: item.genre_ids,
               media_type: 'tv' as const
+              // Removed popularity property as it's not in the TVShow interface
             }) satisfies TVShow)
           ],
           total_pages: Math.max(movieResults.total_pages, tvResults.total_pages),
@@ -166,13 +168,13 @@ export default function SearchPage() {
   const hasActiveFilters = selectedGenre || selectedYear || selectedRating !== '0' || includeAdult;
 
   // Reset all filters
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setSelectedGenre('all');
     setSelectedYear('all');
     setSelectedRating('0');
     setIncludeAdult(false);
     router.push(`/search?q=${encodeURIComponent(search)}`, { scroll: false });
-  };
+  }, [search, router]);
 
   // Define event names for the FilterModal
   const genreChangeEvent = 'search-page-genre-change';

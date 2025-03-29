@@ -8,6 +8,7 @@ export interface Movie {
   release_date: string;
   genre_ids: number[];
   media_type: 'movie';
+  popularity: number;
   images?: {
     logos: Array<{
       file_path: string;
