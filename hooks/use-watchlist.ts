@@ -228,6 +228,34 @@ export const useWatchlist = () => {
     }
   }, [loadedItems]);
 
+  const clearWatchlist = useCallback(async (): Promise<boolean> => {
+    console.log('[Watchlist] Clearing entire watchlist');
+    
+    try {
+      // Clear watchlist from local storage
+      localStorage.removeItem(STORAGE_KEY);
+      console.log('[Watchlist] Cleared watchlist from storage');
+      
+      // Update state
+      setSavedItems([]);
+      setLoadedItems([]);
+      
+      toast.success('Watchlist Cleared', {
+        description: 'All items have been removed from your watchlist',
+        style: { background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' },
+        duration: 2000,
+      });
+
+      return true;
+    } catch (error) {
+      console.error('[Watchlist] Failed to clear watchlist:', error);
+      toast.error('Failed to clear watchlist', {
+        description: 'Please try again',
+      });
+      return false;
+    }
+  }, []);
+
   const isInWatchlist = useCallback((id: number): boolean => {
     return savedItems.some(item => item.id === id);
   }, [savedItems]);
@@ -239,6 +267,7 @@ export const useWatchlist = () => {
     error,
     addToWatchlist,
     removeFromWatchlist,
+    clearWatchlist,
     isInWatchlist,
   };
 };
