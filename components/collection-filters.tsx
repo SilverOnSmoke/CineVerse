@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -37,13 +37,51 @@ export function CollectionFilters({
   // Debounce the search query to prevent rapid URL updates
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
   
+  // Define applyFilters function before it's used
+  const applyFilters = useCallback((query: string, sort: string) => {
+    // First filter by search query
+    let filtered = [...initialCollections];
+    
+    if (query) {
+      const lowerQuery = query.toLowerCase();
+      filtered = filtered.filter(collection => 
+        (collection.name?.toLowerCase().includes(lowerQuery)) || 
+        (collection.overview?.toLowerCase().includes(lowerQuery))
+      );
+    }
+    
+    // Then sort based on the selected option
+    switch (sort) {
+      case 'popularity':
+        // Use the popularityScore if available, otherwise fallback to parts count
+        filtered.sort((a, b) => {
+          const aScore = (a as any).popularityScore || (a.parts?.length || 0);
+          const bScore = (b as any).popularityScore || (b.parts?.length || 0);
+          return bScore - aScore;
+        });
+        break;
+      case 'name':
+        filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        break;
+      case 'newest':
+        filtered.sort((a, b) => {
+          const aNewest = a.parts ? Math.max(...a.parts.map(m => new Date(m.release_date || '1900-01-01').getTime())) : 0;
+          const bNewest = b.parts ? Math.max(...b.parts.map(m => new Date(m.release_date || '1900-01-01').getTime())) : 0;
+          return bNewest - aNewest;
+        });
+        break;
+    }
+    
+    setFilteredCollections(filtered);
+  }, [initialCollections]);
+  
   // Sync search query with URL when component mounts
   useEffect(() => {
     if (queryParam) {
       setSearchQuery(queryParam);
       applyFilters(queryParam, sortOption);
     }
-  }, [queryParam, sortOption]);
+  }, [queryParam, sortOption, applyFilters]);
   
   // Update the URL but only when user explicitly submits search or on initial load
   // This prevents refreshes during regular typing
@@ -88,43 +126,6 @@ export function CollectionFilters({
   const handleSortChange = (option: 'popularity' | 'name' | 'newest') => {
     setSortOption(option);
     applyFilters(searchQuery, option);
-  };
-  
-  const applyFilters = (query: string, sort: string) => {
-    // First filter by search query
-    let filtered = [...initialCollections];
-    
-    if (query) {
-      const lowerQuery = query.toLowerCase();
-      filtered = filtered.filter(collection => 
-        (collection.name?.toLowerCase().includes(lowerQuery)) || 
-        (collection.overview?.toLowerCase().includes(lowerQuery))
-      );
-    }
-    
-    // Then sort based on the selected option
-    switch (sort) {
-      case 'popularity':
-        // Use the popularityScore if available, otherwise fallback to parts count
-        filtered.sort((a, b) => {
-          const aScore = (a as any).popularityScore || (a.parts?.length || 0);
-          const bScore = (b as any).popularityScore || (b.parts?.length || 0);
-          return bScore - aScore;
-        });
-        break;
-      case 'name':
-        filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-        break;
-      case 'newest':
-        filtered.sort((a, b) => {
-          const aNewest = a.parts ? Math.max(...a.parts.map(m => new Date(m.release_date || '1900-01-01').getTime())) : 0;
-          const bNewest = b.parts ? Math.max(...b.parts.map(m => new Date(m.release_date || '1900-01-01').getTime())) : 0;
-          return bNewest - aNewest;
-        });
-        break;
-    }
-    
-    setFilteredCollections(filtered);
   };
   
   return (
