@@ -9,6 +9,12 @@ export interface Movie {
   genre_ids: number[];
   media_type: 'movie';
   popularity: number;
+  belongs_to_collection?: {
+    id: number;
+    name: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+  };
   images?: {
     logos: Array<{
       file_path: string;
