@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Film, Search, TrendingUp, Tv, Bookmark } from 'lucide-react';
+import { Film, Search, TrendingUp, Tv, Bookmark, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import React, { useState, useEffect } from 'react';
 import Dock from './ui/dock';
@@ -25,6 +25,12 @@ const navItems = [
     label: 'Trending',
     icon: TrendingUp,
     hoverAnimation: 'animate-trend-up'
+  },
+  {
+    href: '/moods',
+    label: 'Moods',
+    icon: Sparkles,
+    hoverAnimation: 'animate-sparkle'
   },
   {
     href: '/watchlist',
@@ -84,8 +90,23 @@ export function Navbar() {
               </span>
             </Link>
 
-            {/* Empty div for spacing */}
-            <div className="w-9" />
+            {/* Moods Icon (replacing empty div) */}
+            <Link
+              href="/moods"
+              className={cn(
+                "flex items-center p-2 rounded-full transition-all duration-200",
+                pathname === '/moods'
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+              )}
+            >
+              <Sparkles
+                className={cn(
+                  "h-5 w-5 transition-transform duration-200",
+                  pathname === '/moods' && "animate-sparkle"
+                )}
+              />
+            </Link>
           </div>
 
           {/* Desktop Navigation */}

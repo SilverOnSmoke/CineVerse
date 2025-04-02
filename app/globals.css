@@ -102,6 +102,26 @@
     animation-delay: 700ms;
   }
 
+  .animate-sparkle {
+    animation: sparkle 1s ease;
+  }
+  
+  .animate-film-reel {
+    animation: spin 1s ease;
+  }
+  
+  .animate-tv-static {
+    animation: shake 0.5s ease;
+  }
+  
+  .animate-trend-up {
+    animation: bounce 0.5s ease;
+  }
+  
+  .animate-bookmark {
+    animation: grow 0.5s ease;
+  }
+
   .drawer-mask {
     background: rgba(0, 0, 0, 0.5);
     position: fixed;
@@ -127,4 +147,37 @@
   .drawer-content[data-state="open"] {
     transform: translateX(0);
   }
+}
+
+@keyframes sparkle {
+  0% { transform: scale(1); opacity: 1; }
+  20% { transform: scale(1.2); opacity: 0.8; }
+  40% { transform: scale(0.9); opacity: 1; }
+  60% { transform: scale(1.1) rotate(5deg); opacity: 0.9; }
+  80% { transform: scale(0.95) rotate(-5deg); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes grow {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
